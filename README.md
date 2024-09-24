@@ -1,4 +1,4 @@
-# Empty Project Template
+# Scrabble Project Template
 
 Inside your project you should have the following structure:
 ## At the top level:
