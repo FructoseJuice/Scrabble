@@ -6,8 +6,13 @@ public class Space {
     private final SpaceMultiplier multiplier;
     private String contents;
 
-    public Space(String contents) {
+    private final int row;
+    private final int col;
+
+    public Space(String contents, int row, int col) {
         this.contents = contents;
+        this.row = row;
+        this.col = col;
 
         if (contents.contains(".")) {
             if (contents.contains("3")) {
@@ -30,8 +35,20 @@ public class Space {
         };
     }
 
+    public int getCol() {
+        return col;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
     public void setContents(String contents) {
         this.contents = contents;
+    }
+
+    public String getContents() {
+        return contents;
     }
 
     public boolean containsLetter() {
@@ -40,6 +57,14 @@ public class Space {
 
     public boolean isBlank() {
         return contents.contains(".");
+    }
+
+    public boolean equals(Space other) {
+        return contents.trim().equalsIgnoreCase(other.getContents().trim());
+    }
+
+    public boolean coordinateEquals(Space other) {
+        return row == other.getRow() && col == other.getCol();
     }
 
     @Override

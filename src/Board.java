@@ -14,25 +14,38 @@ public class Board {
         String[] splitContents = initContents.split("\n");
 
         for (int i = 0; i < splitContents.length; i++) {
-            ArrayList<String> row = new ArrayList<>();
-            for (int j = 0; j < splitContents[i].length(); j += 3) {
-                row.add(splitContents[i].substring(j, j+2));
-            }
+            //Split row by " "
+            ArrayList<String> row = new ArrayList<>(List.of(splitContents[i].split(" ")));
+
+            //Remove blank elements
+            while (row.remove("")) {continue;}
 
             for (int j = 0; j < row.size(); j++) {
-                board[i][j] = new Space(row.get(j));
+                board[i][j] = new Space(row.get(j), i, j);
             }
         }
     }
 
     public boolean isBoardInLegalState(Trie dictionary) {
-        ArrayList<ArrayList<Space>> foundWords = new ArrayList<>();
-        foundWords.addAll(findHorizontalWords());
-        foundWords.addAll(findVerticalWords());
+        //Find all words on both boards
+        ArrayList<Word> horizontalWords = findHorizontalWords();
+        ArrayList<Word> verticalWords = findVerticalWords();
+
+        //Check if this is the first move
+        if (horizontalWords.size() + verticalWords.size() != 1) {
+            //If this isn't the first move, check if all words are connected
+            ArrayList<Word> allWords = new ArrayList<>();
+            allWords.addAll(horizontalWords);
+            allWords.addAll(verticalWords);
+
+            if (!allWordsAreConnected(allWords)) {
+                return false;
+            }
+        }
 
         //Check if all words are valid
-        for (ArrayList<Space> word : foundWords) {
-            if (!dictionary.containsWord(buildWordFromArrayList(word))) {
+        for (Word word : horizontalWords) {
+            if (!dictionary.containsWord(word.toString())) {
                 return false;
             }
         }
@@ -40,12 +53,12 @@ public class Board {
         return true;
     }
 
-    private ArrayList<ArrayList<Space>> findHorizontalWords() {
-        ArrayList<ArrayList<Space>> foundWords = new ArrayList<>();
+    public ArrayList<Word> findHorizontalWords() {
+        ArrayList<Word> foundWords = new ArrayList<>();
 
         // Check each row for words
         for (int row = 0; row < BOARD_SIZE; row++) {
-            ArrayList<Space> word = new ArrayList<>(); // Initialize word for each row
+            Word word = new Word(); // Initialize word for each row
             int col = 0;
 
             while (col < BOARD_SIZE) {
@@ -60,8 +73,8 @@ public class Board {
                 // Check if this space is at the end of the horizontal
                 if (col == BOARD_SIZE - 1) {
                     if (!isLetterPartOfVerticalWord(row, col)) {
-                        word.add(space); // Add the last letter
-                        foundWords.add(new ArrayList<>(word));
+                        word.addSpace(space); // Add the last letter
+                        foundWords.add(new Word(word));
                     }
                     break; // Exit the loop if at the end of the col
                 }
@@ -71,8 +84,8 @@ public class Board {
                     //Check if this letter is part of a vertical word
                     if (!isLetterPartOfVerticalWord(row, col)) {
                         //If not either, just add the single letter
-                        word.add(space);
-                        foundWords.add(new ArrayList<>(word));
+                        word.addSpace(space);
+                        foundWords.add(new Word(word));
                         word.clear();
                     }
 
@@ -82,16 +95,16 @@ public class Board {
                 }
 
                 // Check if this word extends to the right
-                word.add(space); // Add current letter
+                word.addSpace(space); // Add current letter
 
                 // Iterate to the right and collect letters in word
                 while (col + 1 < BOARD_SIZE && board[row][col + 1].containsLetter()) {
                     col++; // Move to the next column
-                    word.add(board[row][col]); // Add the letter
+                    word.addSpace(board[row][col]); // Add the letter
                 }
 
                 // Add the collected word to foundWords
-                foundWords.add(new ArrayList<>(word));
+                foundWords.add(new Word(word));
                 word.clear(); // Clear the current word for the next iteration
 
 
@@ -102,12 +115,12 @@ public class Board {
         return foundWords;
     }
 
-    private ArrayList<ArrayList<Space>> findVerticalWords() {
-        ArrayList<ArrayList<Space>> foundWords = new ArrayList<>();
+    public ArrayList<Word> findVerticalWords() {
+        ArrayList<Word> foundWords = new ArrayList<>();
 
         // Check each column for words
         for (int col = 0; col < BOARD_SIZE; col++) {
-            ArrayList<Space> word = new ArrayList<>(); // Initialize word for each column
+            Word word = new Word(); // Initialize word for each column
             int row = 0;
 
             while (row < BOARD_SIZE) {
@@ -122,8 +135,8 @@ public class Board {
                 // Check if this space is at the end of the vertical
                 if (row == BOARD_SIZE - 1) {
                     if (!isLetterPartOfHorizontalWord(row, col)) {
-                        word.add(space); // Add the last letter
-                        foundWords.add(new ArrayList<>(word));
+                        word.addSpace(space); // Add the last letter
+                        foundWords.add(new Word(word));
                     }
 
                     break;
@@ -134,8 +147,8 @@ public class Board {
                     // Check if this letter is part of a horizontal word
                     if (!isLetterPartOfHorizontalWord(row, col)) {
                         // If not either, just add the single letter
-                        word.add(space);
-                        foundWords.add(new ArrayList<>(word));
+                        word.addSpace(space);
+                        foundWords.add(new Word(word));
                         word.clear();
                     }
 
@@ -145,16 +158,16 @@ public class Board {
                 }
 
                 // Check if this word extends downward
-                word.add(space);
+                word.addSpace(space);
 
                 // Iterate downward and collect letters in word
                 while (row + 1 < BOARD_SIZE && board[row + 1][col].containsLetter()) {
                     row++;
-                    word.add(board[row][col]);
+                    word.addSpace(board[row][col]);
                 }
 
                 // Add the collected word to foundWords
-                foundWords.add(new ArrayList<>(word));
+                foundWords.add(new Word(word));
                 word.clear();
 
                 row++;
@@ -203,16 +216,87 @@ public class Board {
         return aboveFound || belowFound;
     }
 
-    private String buildWordFromArrayList(ArrayList<Space> word) {
-        //Build word and check if in dictionary
-        StringBuilder stringBuilder = new StringBuilder();
+    public boolean areBoardsCompatible(Trie dictionary, Board result) {
+        //Find all words
+        ArrayList<Word> originalWords = new ArrayList<>();
+        originalWords.addAll(this.findHorizontalWords());
+        originalWords.addAll(this.findVerticalWords());
 
-        for (Space letter : word) {
-            stringBuilder.append(letter.toString());
+        ArrayList<Word> resultWords = new ArrayList<>();
+        resultWords.addAll(result.findHorizontalWords());
+        resultWords.addAll(result.findVerticalWords());
+
+
+        //Ensure that any new words are valid
+        for (Word word : resultWords) {
+            if (!dictionary.containsWord(word.toString())) {
+                System.out.println(word.toString() + " Is invalid.");
+                return false;
+            }
         }
 
-        return stringBuilder.toString();
+
+        //If this is the first move, we're good
+        if (originalWords.isEmpty() && resultWords.size() == 1) {
+            return true;
+        }
+
+
+        //If these have the same amount of words, or more than 1 new word, invalid
+        if (originalWords.size() == resultWords.size() //No new words
+                || originalWords.size() + 2 <= resultWords.size() //More than 1 new words
+                || originalWords.size() > resultWords.size()) { //Less words somehow??
+            System.out.println("Suspicious change in word count");
+            System.out.println("Original: " +  originalWords.size() + " Result: " + resultWords.size());
+            return false;
+        }
+
+
+        //Check to see if any words from the original board have moved
+        for (Word originalWord : originalWords) {
+            for (Space space : originalWord.getSpacesArray()) {
+                //Check if this space is the same in the new board
+                if (!space.equals(result.getSpaceAtCoordinates(space.getRow(), space.getCol()))) {
+                    System.out.println(originalWord + " has moved");
+                    //Word has moved
+                    return false;
+                }
+            }
+        }
+
+
+        //Ensure all words are connected
+        return allWordsAreConnected(resultWords);
     }
+
+    public Space getSpaceAtCoordinates(int row, int col) {
+        return board[row][col];
+    }
+
+    private boolean allWordsAreConnected(ArrayList<Word> allWords) {
+        //Ensure all words are connected
+        boolean hasConnection;
+        for (int i = 0; i < allWords.size(); i++) {
+            hasConnection = false;
+
+            //Check all other words in the array
+            for (int j = i + 1; j < allWords.size(); j++) {
+                if (allWords.get(i).sharesASpaceWithOtherWord(allWords.get(j))) {
+                    hasConnection = true;
+                }
+            }
+
+            //If this word isn't connected to anything, it's invalid
+            if (!hasConnection) {
+                System.out.println(allWords.get(i).toString() + " has no connection");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
 
     @Override
     public String toString() {

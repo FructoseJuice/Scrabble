@@ -11,11 +11,11 @@ public class Main {
         Trie dictionary = initTrie(filePath);
         //Board board = initBoard(filePath);
         Board originalBoard = initBoard("Enter original size and board:");
-
         Board resultBoard = initBoard("Enter result size and board:");
 
-        System.out.println(originalBoard.isBoardInLegalState(dictionary));
-        System.out.println(resultBoard.isBoardInLegalState(dictionary));
+        //System.out.println(originalBoard.isBoardInLegalState(dictionary));
+        //System.out.println(resultBoard.isBoardInLegalState(dictionary));
+        System.out.println(originalBoard.areBoardsCompatible(dictionary, resultBoard));
     }
 
     public static String parseCLIForBoardFilePath(String[] args) {
@@ -66,7 +66,7 @@ public class Main {
         //Read in size of board, should be first line of input
         int boardSize;
         System.out.println(inputPrompt);
-        boardSize = Integer.parseInt(reader.readLine());
+        boardSize = Integer.parseInt(reader.readLine().trim());
 
         //Read each row
         for (int i = 0; i < boardSize; i++) {

@@ -41,6 +41,9 @@ public class Trie {
     }
 
     public boolean containsWord(String word) {
+        //Ensure this word is in all lowercase
+        word = word.toLowerCase();
+
         ConnectionTree connectionTree;
 
         //Check to see if first character is at the root of the tree
