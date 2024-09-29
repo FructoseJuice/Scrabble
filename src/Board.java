@@ -1,6 +1,7 @@
 import Trie.Trie;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
     private final Space[][] board;
@@ -12,11 +13,14 @@ public class Board {
 
         String[] splitContents = initContents.split("\n");
 
-        for (int i = 0; i < size; i++) {
-            String[] splitLine = splitContents[i].split(" ");
+        for (int i = 0; i < splitContents.length; i++) {
+            ArrayList<String> row = new ArrayList<>();
+            for (int j = 0; j < splitContents[i].length(); j += 3) {
+                row.add(splitContents[i].substring(j, j+2));
+            }
 
-            for (int j = 0; j < size; j++) {
-                board[i][j] = new Space(splitLine[j]);
+            for (int j = 0; j < row.size(); j++) {
+                board[i][j] = new Space(row.get(j));
             }
         }
     }

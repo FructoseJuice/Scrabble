@@ -73,8 +73,6 @@ public class Main {
             boardContents.append(reader.readLine()).append("\n");
         }
 
-        System.out.println(boardContents.toString());
-
         return new Board(boardSize, boardContents.toString());
     }
 }

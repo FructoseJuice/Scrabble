@@ -9,18 +9,14 @@ public class Space {
     public Space(String contents) {
         this.contents = contents;
 
-        if (contents.charAt(0) != '.') {
-            multiplier = switch (contents.charAt(0)) {
-                case '2' -> SpaceMultiplier.TWO;
-                case '3' -> SpaceMultiplier.THREE;
-                default -> SpaceMultiplier.ONE;
-            };
-        } else if (contents.charAt(1) != '.') {
-            multiplier = switch (contents.charAt(1)) {
-                case '2' -> SpaceMultiplier.TWO;
-                case '3' -> SpaceMultiplier.THREE;
-                default -> SpaceMultiplier.ONE;
-            };
+        if (contents.contains(".")) {
+            if (contents.contains("3")) {
+                multiplier = SpaceMultiplier.THREE;
+            } else if (contents.contains("2")) {
+                multiplier = SpaceMultiplier.TWO;
+            } else {
+                multiplier = SpaceMultiplier.ONE;
+            }
         } else {
             multiplier = SpaceMultiplier.ONE;
         }
