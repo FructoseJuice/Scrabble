@@ -1,11 +1,11 @@
-package Trie_Graph;
+package Trie;
 
 import java.util.HashMap;
 
-public class TrieGraph {
+public class Trie {
     private final HashMap<Character, ConnectionTree> rootConnectionTrees = new HashMap<>();
 
-    public TrieGraph() {}
+    public Trie() {}
 
     public void addWord(String word) {
         ConnectionTree newConnection;
@@ -41,11 +41,11 @@ public class TrieGraph {
     }
 
     public boolean containsWord(String word) {
-        ConnectionTree connection;
+        ConnectionTree connectionTree;
 
         //Check to see if first character is at the root of the tree
         if (rootConnectionTrees.containsKey(word.charAt(0))) {
-            connection = rootConnectionTrees.get(word.charAt(0));
+            connectionTree = rootConnectionTrees.get(word.charAt(0));
         } else {
             return false;
         }
@@ -54,14 +54,16 @@ public class TrieGraph {
         for (int i = 1; i < word.length(); i++) {
             connectionChar = word.charAt(i);
 
-            if (connection.hasConnection(connectionChar)) {
-                connection = connection.getConnection(connectionChar);
+            //Check if the previous letter has a connection to this letter
+            if (connectionTree.hasConnection(connectionChar)) {
+                connectionTree = connectionTree.getConnection(connectionChar);
             } else {
+                //If a connection wasn't found here, this word does not exist in the current dictionary
                 return false;
             }
         }
 
         //This should be the leaf, so we return if this is a terminator or not
-        return connection.isTerminator();
+        return connectionTree.isTerminator();
     }
 }

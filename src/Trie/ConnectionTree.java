@@ -1,4 +1,4 @@
-package Trie_Graph;
+package Trie;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-import Trie_Graph.TrieGraph;
+import Trie.Trie;
 
 import java.io.*;
 
@@ -7,11 +7,11 @@ public class Main {
         //Args for type of board
         //String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
         String filePath = "dictionaries_and_examples\\" + args[0];
-        TrieGraph trieGraph = initTrie(filePath);
+        Trie trie = initTrie(filePath);
         //Board board = initBoard(filePath);
 
 
-        System.out.println(trieGraph.containsWord("aa"));
+        System.out.println(trie.containsWord("aa"));
     }
 
     public static String parseCLIForBoardFilePath(String[] args) {
@@ -31,8 +31,8 @@ public class Main {
         };
     }
 
-    public static TrieGraph initTrie(String filePath) {
-        TrieGraph trieGraph = new TrieGraph();
+    public static Trie initTrie(String filePath) {
+        Trie trie = new Trie();
 
         // Using try-with-resources to ensure the BufferedReader is closed automatically
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
@@ -41,7 +41,7 @@ public class Main {
             // Read lines until "exit" is entered
             while ((line = reader.readLine()) != null) {
                 if (!line.isBlank()) {
-                    trieGraph.addWord(line);
+                    trie.addWord(line);
                 }
             }
 
@@ -50,7 +50,7 @@ public class Main {
             System.err.println("An error occurred while reading input: " + e.getMessage());
         }
 
-        return trieGraph;
+        return trie;
     }
 
     /*
