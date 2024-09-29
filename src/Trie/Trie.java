@@ -64,6 +64,6 @@ public class Trie {
         }
 
         //This should be the leaf, so we return if this is a terminator or not
-        return connectionTree.isTerminator();
+        return connectionTree.isATerminatorNode();
     }
 }

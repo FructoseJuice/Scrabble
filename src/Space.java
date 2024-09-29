@@ -38,6 +38,14 @@ public class Space {
         this.contents = contents;
     }
 
+    public boolean containsLetter() {
+        return !contents.contains(".");
+    }
+
+    public boolean isBlank() {
+        return contents.contains(".");
+    }
+
     @Override
     public String toString() {
         return contents;

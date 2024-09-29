@@ -3,18 +3,18 @@ package Trie;
 import java.util.HashMap;
 
 public class ConnectionTree {
-    private final char node;
-    private boolean isTerminator = false;
+    private final char NODE;
+    private boolean isATerminatorNode = false;
 
     //All connection trees connected to this node
     private final HashMap<Character, ConnectionTree> childConnectionTrees = new HashMap<>();
 
     public ConnectionTree(char node) {
-        this.node = node;
+        this.NODE = node;
     }
 
     public char getNode() {
-        return node;
+        return NODE;
     }
 
     public ConnectionTree makeNewConnection(char c) {
@@ -31,11 +31,11 @@ public class ConnectionTree {
         return childConnectionTrees.get(c);
     }
 
-    public boolean isTerminator() {
-        return isTerminator;
+    public boolean isATerminatorNode() {
+        return isATerminatorNode;
     }
 
     public void setTerminator() {
-        isTerminator = true;
+        isATerminatorNode = true;
     }
 }
