@@ -3,8 +3,8 @@ public class Space {
         ONE, TWO, THREE;
     }
 
-    SpaceMultiplier multiplier;
-    String contents;
+    private final SpaceMultiplier multiplier;
+    private String contents;
 
     public Space(String contents) {
         this.contents = contents;
@@ -24,6 +24,18 @@ public class Space {
         } else {
             multiplier = SpaceMultiplier.ONE;
         }
+    }
+
+    public int getMultiplier() {
+        return switch (multiplier) {
+            case ONE -> 1;
+            case TWO -> 2;
+            case THREE -> 3;
+        };
+    }
+
+    public void setContents(String contents) {
+        this.contents = contents;
     }
 
     @Override

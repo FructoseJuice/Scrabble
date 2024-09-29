@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 public class Board {
-    Space[][] board;
+    private final Space[][] board;
 
     public Board(int size, String initContents) {
         board = new Space[size][size];
@@ -16,7 +16,5 @@ public class Board {
                 board[i][j] = new Space(splitLine[j]);
             }
         }
-
-        System.out.println(Arrays.deepToString(board));
     }
 }

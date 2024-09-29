@@ -1,14 +1,17 @@
+import Trie_Graph.TrieGraph;
+
 import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         //Args for type of board
-        //-r regular, -su super, -w words with friends, -sm small
-        String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
+        //String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
+        String filePath = "dictionaries_and_examples\\" + args[0];
+        TrieGraph trieGraph = initTrie(filePath);
+        //Board board = initBoard(filePath);
 
-        Board board = initBoard(filePath);
 
-
+        System.out.println(trieGraph.containsWord("aa"));
     }
 
     public static String parseCLIForBoardFilePath(String[] args) {
@@ -28,12 +31,35 @@ public class Main {
         };
     }
 
+    public static TrieGraph initTrie(String filePath) {
+        TrieGraph trieGraph = new TrieGraph();
+
+        // Using try-with-resources to ensure the BufferedReader is closed automatically
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
+            String line;
+
+            // Read lines until "exit" is entered
+            while ((line = reader.readLine()) != null) {
+                if (!line.isBlank()) {
+                    trieGraph.addWord(line);
+                }
+            }
+
+        } catch (IOException e) {
+            // Handle any IO exceptions
+            System.err.println("An error occurred while reading input: " + e.getMessage());
+        }
+
+        return trieGraph;
+    }
+
+    /*
     public static Board initBoard(String boardFilePath) {
         int boardSize = -1;
         StringBuilder boardContents = new StringBuilder();
 
         // Using try-with-resources to ensure the BufferedReader is closed automatically
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(boardFilePath + ".txt")))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(boardFilePath)))) {
             boardSize = Integer.parseInt(reader.readLine());
             String line;
 
@@ -49,4 +75,6 @@ public class Main {
 
         return new Board(boardSize, boardContents.toString());
     }
+
+     */
 }
