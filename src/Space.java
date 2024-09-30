@@ -1,5 +1,4 @@
 public class Space {
-    private final int multiplier;
     private String contents;
 
     private final int row;
@@ -9,18 +8,6 @@ public class Space {
         this.contents = contents;
         this.row = row;
         this.col = col;
-
-        if (contents.contains("3")) {
-            multiplier = 3;
-        } else if (contents.contains("2")) {
-            multiplier = 2;
-        } else {
-            multiplier = 1;
-        }
-    }
-
-    public int getMultiplier() {
-        return multiplier;
     }
 
     public int getCol() {
@@ -74,9 +61,7 @@ public class Space {
             default -> val = 0; // Non-letter characters or invalid letters
         }
 
-        System.out.println(letter + " " + val + " " + multiplier);
-
-        return val * multiplier;
+        return val;
     }
 
     @Override

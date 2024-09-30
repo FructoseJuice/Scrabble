@@ -10,13 +10,18 @@ public class Main {
         String filePath = "dictionaries_and_examples\\" + args[0];
         Trie dictionary = initTrie(filePath);
         //Board board = initBoard(filePath);
-        Board originalBoard = initBoard("Enter original size and board:");
-        Board resultBoard = initBoard("Enter result size and board:");
+        Board originalBoard;
+        Board resultBoard;
 
         //System.out.println(originalBoard.isBoardInLegalState(dictionary));
         //System.out.println(resultBoard.isBoardInLegalState(dictionary));
-        if (originalBoard.areBoardsCompatible(dictionary, resultBoard)) {
-            System.out.println(originalBoard.scorePlay(dictionary, resultBoard));
+        while (true) {
+            originalBoard = initBoard("Enter original size and board:");
+            resultBoard = initBoard("Enter result size and board:");
+
+            if (originalBoard.areBoardsCompatible(dictionary, resultBoard)) {
+                System.out.println(originalBoard.scorePlay(dictionary, originalBoard, resultBoard));
+            }
         }
     }
 

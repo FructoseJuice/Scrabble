@@ -1,42 +1,43 @@
 import Trie.Trie;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class Board {
     private final Space[][] board;
+    private final Multiplier[][] multiplierBoard;
     private final int BOARD_SIZE;
 
     public Board(int size, String initContents) {
         this.BOARD_SIZE = size;
         board = new Space[size][size];
+        multiplierBoard = new Multiplier[size][size];
 
         //Initialize empty board so that we can score later on
-        String [] splitContents = BoardLayouts.getBoardLayout(size).split("\n");
-        for (int i = 0; i < splitContents.length; i++) {
-            //Split row by " "
-            ArrayList<String> row = new ArrayList<>(List.of(splitContents[i].split(" ")));
-
-            for (int j = 0; j < row.size(); j++) {
-                board[i][j] = new Space(row.get(j), i, j);
-            }
-        }
+        String [] splitContents;
 
         //Initialize non-empty spaces
         splitContents = initContents.split("\n");
 
+        String spaceContent = "";
         for (int i = 0; i < splitContents.length; i++) {
             //Split row by " "
             ArrayList<String> row = new ArrayList<>(List.of(splitContents[i].split(" ")));
 
             //Remove blank elements
-            while (row.remove("")) {continue;}
+            while (row.remove("")) {
+                continue;
+            }
 
             for (int j = 0; j < row.size(); j++) {
-                //Ensure this space has a letter
-                if (!row.get(j).contains(".")) {
-                    board[i][j].setContents(row.get(j));
-                }
+                spaceContent = row.get(j);
+
+                //Add space to board
+                board[i][j] = new Space(spaceContent, i, j);
+
+                //Add multiplier to board
+                multiplierBoard[i][j] = new Multiplier(spaceContent);
             }
         }
     }
@@ -68,7 +69,7 @@ public class Board {
         return true;
     }
 
-    public String scorePlay(Trie dictionary, Board result) {
+    public String scorePlay(Trie dictionary, Board original, Board result) {
         //Find all words on both boards
         ArrayList<Word> myWords = new ArrayList<>();
         myWords.addAll(findHorizontalWords());
@@ -81,6 +82,11 @@ public class Board {
         if (!areBoardsCompatible(dictionary, result)) {
             return "Boards are not compatible.";
         }
+
+        /*
+       BINGO! If you play seven tiles on a turn, it’s a Bingo. You score a premium of 50
+points after totaling your score for the turn.
+         */
 
         //Score play
 
@@ -137,7 +143,8 @@ public class Board {
         //Score every new word
         int score = 0;
         for (Word word : newWords) {
-            score += scoreWord(word);
+            //Check if word or letter multiplier
+            score += scoreWord(word, original);
         }
 
         StringBuilder output = new StringBuilder();
@@ -147,6 +154,7 @@ public class Board {
         for (Space space : newPlay.getSpacesArray()) {
             output.append(String.format(" %s -> (%d, %d),", space.getContents(), space.getRow(), space.getCol()));
         }
+
         //Delete last comma
         output.deleteCharAt(output.length()-1);
 
@@ -322,6 +330,28 @@ public class Board {
     }
 
     public boolean areBoardsCompatible(Trie dictionary, Board result) {
+        //Ensure that these boards are different
+        boolean differenceFound = false;
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (!getSpaceAtCoordinates(i, j).equals(result.getSpaceAtCoordinates(i, j))) {
+                    //If these are both blank this is a multiplier mismatch
+                    if (getSpaceAtCoordinates(i, j).isBlank() && result.getSpaceAtCoordinates(i, j).isBlank()) {
+                        System.out.println("Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")");
+                        return false;
+                    } else {
+                        differenceFound = true;
+                    }
+                }
+            }
+        }
+
+        //See if any spaces have been updated
+        if (!differenceFound) {
+            System.out.println("No new play found.");
+            return false;
+        }
+
         //Find all words
         ArrayList<Word> originalWords = new ArrayList<>();
         originalWords.addAll(this.findHorizontalWords());
@@ -334,8 +364,7 @@ public class Board {
 
         //Trivial cases based on size
         //If these boards have the same amount of words, or less, invalid
-        if (originalWords.size() == resultWords.size() //No new words
-                || originalWords.size() > resultWords.size()) { //Less words somehow??
+        if (originalWords.size() > resultWords.size()) { //Less words somehow??
             System.out.println("Suspicious change in word count");
             System.out.println("Original: " +  originalWords.size() + " Result: " + resultWords.size());
             return false;
@@ -345,7 +374,7 @@ public class Board {
         //Ensure that all words in new board are valid
         for (Word word : resultWords) {
             if (!dictionary.containsWord(word.toString())) {
-                System.out.println(word.toString() + " Is invalid.");
+                System.out.println("\"" + word.toString() + "\" Is invalid.");
                 return false;
             }
         }
@@ -362,7 +391,8 @@ public class Board {
             for (Space space : originalWord.getSpacesArray()) {
                 //Check if this space is the same in the new board
                 if (!space.equals(result.getSpaceAtCoordinates(space.getRow(), space.getCol()))) {
-                    System.out.println(originalWord + " has moved");
+                    System.out.println("Incompatible boards: \"" + originalWord + "\" been altered");
+                    System.out.printf("Found at (%d, %d).\n%n", space.getRow(), space.getCol());
                     //Word has moved
                     return false;
                 }
@@ -378,16 +408,32 @@ public class Board {
         return board[row][col];
     }
 
+    public Multiplier getMultiplierAtCoordinates(int row, int col) {
+        return multiplierBoard[row][col];
+    }
+
     private boolean allWordsAreConnected(ArrayList<Word> allWords) {
+        HashSet<Word> connectedWords = new HashSet<>();
+
         //Ensure all words are connected
         boolean hasConnection;
-        for (int i = 0; i < allWords.size(); i++) {
+        for (int i = 0; i < allWords.size() - 1; i++) {
+            //If we have previously found a connection iterate loop
+            if (connectedWords.contains(allWords.get(i))) continue;
+
             hasConnection = false;
 
+
             //Check all other words in the array
-            for (int j = i + 1; j < allWords.size(); j++) {
-                if (allWords.get(i).sharesASpaceWithOtherWord(allWords.get(j))) {
+            for (int j = 0; j < allWords.size(); j++) {
+                //Don't check ourselves
+                if (i == j) continue;
+
+                if (allWords.get(i).sharesALetterWithOtherWord(allWords.get(j))) {
+                    connectedWords.add(allWords.get(i));
+                    connectedWords.add(allWords.get(j));
                     hasConnection = true;
+                    break;
                 }
             }
 
@@ -401,11 +447,24 @@ public class Board {
         return true;
     }
 
-    private int scoreWord(Word word) {
+    private int scoreWord(Word word, Board board) {
         int score = 0;
 
+        ArrayList<Multiplier> wordMultipliers = new ArrayList<>();
+        Multiplier multiplier;
         for (Space letter : word.getSpacesArray()) {
+            multiplier = board.getMultiplierAtCoordinates(letter.getRow(), letter.getCol());
+
+            if (!multiplier.isMultiplierUsed() && multiplier.type == Multiplier.MultiplierType.WORD) {
+                wordMultipliers.add(multiplier);
+            }
+
             score += letter.getScrabblePointValue();
+        }
+
+        //Apply word multipliers
+        for (Multiplier wordMultiplier : wordMultipliers) {
+            score *= wordMultiplier.getMultiplierIntValue();
         }
 
         return score;

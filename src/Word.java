@@ -43,10 +43,10 @@ public class Word {
         this.word.clear();
     }
 
-    public boolean sharesASpaceWithOtherWord(Word other) {
+    public boolean sharesALetterWithOtherWord(Word other) {
         for (Space mySpace : word) {
             for (Space otherSpace : other.getSpacesArray()) {
-                if (mySpace.getCol() == otherSpace.getCol() && mySpace.getRow() == otherSpace.getRow()) {
+                if (mySpace.absEquals(otherSpace)) {
                     return true;
                 }
             }
