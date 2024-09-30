@@ -15,7 +15,9 @@ public class Main {
 
         //System.out.println(originalBoard.isBoardInLegalState(dictionary));
         //System.out.println(resultBoard.isBoardInLegalState(dictionary));
-        System.out.println(originalBoard.areBoardsCompatible(dictionary, resultBoard));
+        if (originalBoard.areBoardsCompatible(dictionary, resultBoard)) {
+            System.out.println(originalBoard.scorePlay(dictionary, resultBoard));
+        }
     }
 
     public static String parseCLIForBoardFilePath(String[] args) {

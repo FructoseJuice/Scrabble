@@ -11,7 +11,19 @@ public class Board {
         this.BOARD_SIZE = size;
         board = new Space[size][size];
 
-        String[] splitContents = initContents.split("\n");
+        //Initialize empty board so that we can score later on
+        String [] splitContents = BoardLayouts.getBoardLayout(size).split("\n");
+        for (int i = 0; i < splitContents.length; i++) {
+            //Split row by " "
+            ArrayList<String> row = new ArrayList<>(List.of(splitContents[i].split(" ")));
+
+            for (int j = 0; j < row.size(); j++) {
+                board[i][j] = new Space(row.get(j), i, j);
+            }
+        }
+
+        //Initialize non-empty spaces
+        splitContents = initContents.split("\n");
 
         for (int i = 0; i < splitContents.length; i++) {
             //Split row by " "
@@ -21,7 +33,10 @@ public class Board {
             while (row.remove("")) {continue;}
 
             for (int j = 0; j < row.size(); j++) {
-                board[i][j] = new Space(row.get(j), i, j);
+                //Ensure this space has a letter
+                if (!row.get(j).contains(".")) {
+                    board[i][j].setContents(row.get(j));
+                }
             }
         }
     }
@@ -51,6 +66,96 @@ public class Board {
         }
 
         return true;
+    }
+
+    public String scorePlay(Trie dictionary, Board result) {
+        //Find all words on both boards
+        ArrayList<Word> myWords = new ArrayList<>();
+        myWords.addAll(findHorizontalWords());
+        myWords.addAll(findVerticalWords());
+
+        ArrayList<Word> resultWords = new ArrayList<>();
+        resultWords.addAll(result.findHorizontalWords());
+        resultWords.addAll(result.findVerticalWords());
+
+        if (!areBoardsCompatible(dictionary, result)) {
+            return "Boards are not compatible.";
+        }
+
+        //Score play
+
+        ArrayList<Word> newWords = new ArrayList<>();
+        //Find new words
+        for (Word newWord : resultWords) {
+            boolean foundInOriginalBoard = false;
+            for (Word originalWord : myWords) {
+                if (newWord.absEquals(originalWord)) {
+                    foundInOriginalBoard = true;
+                    break;
+                }
+            }
+
+            //Check if this word is new
+            if (!foundInOriginalBoard) {
+                //This word is new
+                newWords.add(newWord);
+            }
+        }
+
+        //Find play
+        Word newPlay = new Word();
+
+        //Trivial case, if this was the first move
+        if (myWords.isEmpty()) {
+            newPlay = resultWords.getFirst();
+        }
+
+        for (Word resultWord : newWords) {
+            for (Space newSpace : resultWord.getSpacesArray()) {
+                boolean foundInOriginalBoard = false;
+
+                for (Word originalWord : myWords) {
+                    if (originalWord.absContains(newSpace)) {
+                        //Found this space in an original word
+                        foundInOriginalBoard = true;
+                        break;
+                    }
+                }
+
+                //Check if was in original board
+                if (!foundInOriginalBoard) {
+                    //If this wasn't in the original board
+                    //Check if we already added this space to the new play
+                    if (!newPlay.absContains(newSpace)) {
+                        //Add to new play
+                        newPlay.addSpace(newSpace);
+                    }
+                }
+            }
+        }
+
+        //Score every new word
+        int score = 0;
+        for (Word word : newWords) {
+            score += scoreWord(word);
+        }
+
+        StringBuilder output = new StringBuilder();
+
+        output.append("Play is");
+        //Add new spaces to output
+        for (Space space : newPlay.getSpacesArray()) {
+            output.append(String.format(" %s -> (%d, %d),", space.getContents(), space.getRow(), space.getCol()));
+        }
+        //Delete last comma
+        output.deleteCharAt(output.length()-1);
+
+        output.append("\nPlay is legal.\n");
+
+        //Add score
+        output.append("Score is ").append(score).append("\n");
+
+        return output.toString();
     }
 
     public ArrayList<Word> findHorizontalWords() {
@@ -227,7 +332,17 @@ public class Board {
         resultWords.addAll(result.findVerticalWords());
 
 
-        //Ensure that any new words are valid
+        //Trivial cases based on size
+        //If these boards have the same amount of words, or less, invalid
+        if (originalWords.size() == resultWords.size() //No new words
+                || originalWords.size() > resultWords.size()) { //Less words somehow??
+            System.out.println("Suspicious change in word count");
+            System.out.println("Original: " +  originalWords.size() + " Result: " + resultWords.size());
+            return false;
+        }
+
+
+        //Ensure that all words in new board are valid
         for (Word word : resultWords) {
             if (!dictionary.containsWord(word.toString())) {
                 System.out.println(word.toString() + " Is invalid.");
@@ -239,16 +354,6 @@ public class Board {
         //If this is the first move, we're good
         if (originalWords.isEmpty() && resultWords.size() == 1) {
             return true;
-        }
-
-
-        //If these have the same amount of words, or more than 1 new word, invalid
-        if (originalWords.size() == resultWords.size() //No new words
-                || originalWords.size() + 2 <= resultWords.size() //More than 1 new words
-                || originalWords.size() > resultWords.size()) { //Less words somehow??
-            System.out.println("Suspicious change in word count");
-            System.out.println("Original: " +  originalWords.size() + " Result: " + resultWords.size());
-            return false;
         }
 
 
@@ -296,7 +401,15 @@ public class Board {
         return true;
     }
 
+    private int scoreWord(Word word) {
+        int score = 0;
 
+        for (Space letter : word.getSpacesArray()) {
+            score += letter.getScrabblePointValue();
+        }
+
+        return score;
+    }
 
     @Override
     public String toString() {

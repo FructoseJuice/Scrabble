@@ -1,9 +1,5 @@
 public class Space {
-    public enum SpaceMultiplier {
-        ONE, TWO, THREE;
-    }
-
-    private final SpaceMultiplier multiplier;
+    private final int multiplier;
     private String contents;
 
     private final int row;
@@ -14,25 +10,17 @@ public class Space {
         this.row = row;
         this.col = col;
 
-        if (contents.contains(".")) {
-            if (contents.contains("3")) {
-                multiplier = SpaceMultiplier.THREE;
-            } else if (contents.contains("2")) {
-                multiplier = SpaceMultiplier.TWO;
-            } else {
-                multiplier = SpaceMultiplier.ONE;
-            }
+        if (contents.contains("3")) {
+            multiplier = 3;
+        } else if (contents.contains("2")) {
+            multiplier = 2;
         } else {
-            multiplier = SpaceMultiplier.ONE;
+            multiplier = 1;
         }
     }
 
     public int getMultiplier() {
-        return switch (multiplier) {
-            case ONE -> 1;
-            case TWO -> 2;
-            case THREE -> 3;
-        };
+        return multiplier;
     }
 
     public int getCol() {
@@ -65,6 +53,30 @@ public class Space {
 
     public boolean coordinateEquals(Space other) {
         return row == other.getRow() && col == other.getCol();
+    }
+
+    public boolean absEquals(Space other) {
+        return equals(other) && coordinateEquals(other);
+    }
+
+    public int getScrabblePointValue() {
+        char letter = contents.trim().charAt(0); // Convert to lowercase for uniformity
+
+        int val;
+        switch (letter) {
+            case 'a', 'e', 'i', 'o', 'u', 'l', 'n', 's', 't', 'r' -> val = 1;
+            case 'd', 'g' -> val = 2;
+            case 'b', 'c', 'm', 'p' -> val = 3;
+            case 'f', 'h', 'v', 'w', 'y' -> val = 4;
+            case 'k' -> val = 5;
+            case 'j', 'x' -> val = 8;
+            case 'q', 'z' -> val = 10;
+            default -> val = 0; // Non-letter characters or invalid letters
+        }
+
+        System.out.println(letter + " " + val + " " + multiplier);
+
+        return val * multiplier;
     }
 
     @Override
