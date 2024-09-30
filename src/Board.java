@@ -42,129 +42,82 @@ public class Board {
         }
     }
 
-    public ArrayList<Word> findHorizontalWords() {
+    private ArrayList<Word> findWordsInDirection(boolean horizontalDir) {
         ArrayList<Word> foundWords = new ArrayList<>();
 
-        // Check each row for words
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            Word word = new Word(); // Initialize word for each row
-            int col = 0;
+        // Loop through rows or columns based on the direction
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            //Initialize word
+            Word word = new Word();
+            int index = 0;
 
-            while (col < BOARD_SIZE) {
-                Space space = board[row][col];
+            while (index < BOARD_SIZE) {
+                Space space = horizontalDir ? board[i][index] : board[index][i];
 
-                //If empty iterate and continue
+                //If empty, iterate and continue
                 if (space.isBlank()) {
-                    col++;
+                    index++;
                     continue;
                 }
 
-                // Check if this space is at the end of the horizontal
-                if (col == BOARD_SIZE - 1) {
-                    if (!isLetterPartOfVerticalWord(row, col)) {
-                        word.addSpace(space); // Add the last letter
-                        foundWords.add(new Word(word));
-                    }
-                    break; // Exit the loop if at the end of the col
-                }
-
-                //Check if this letter is part of a horizontal word
-                if (!isLetterPartOfHorizontalWord(row, col)) {
-                    //Check if this letter is part of a vertical word
-                    if (!isLetterPartOfVerticalWord(row, col)) {
-                        //If not either, just add the single letter
+                //Check if this space is at the end of the word
+                if (index == BOARD_SIZE - 1) {
+                    if (!isLetterPartOfHorizontalWord(horizontalDir ? i : index, horizontalDir ? index : i)) {
+                        // Add the last letter
                         word.addSpace(space);
-                        foundWords.add(new Word(word));
-                        word.clear();
-                    }
-
-                    //Iterate and continue
-                    col++;
-                    continue;
-                }
-
-                // Check if this word extends to the right
-                word.addSpace(space); // Add current letter
-
-                // Iterate to the right and collect letters in word
-                while (col + 1 < BOARD_SIZE && board[row][col + 1].containsLetter()) {
-                    col++; // Move to the next column
-                    word.addSpace(board[row][col]); // Add the letter
-                }
-
-                // Add the collected word to foundWords
-                foundWords.add(new Word(word));
-                word.clear(); // Clear the current word for the next iteration
-
-
-                col++; // Move to the next column
-            }
-        }
-
-        return foundWords;
-    }
-
-    public ArrayList<Word> findVerticalWords() {
-        ArrayList<Word> foundWords = new ArrayList<>();
-
-        // Check each column for words
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            Word word = new Word(); // Initialize word for each column
-            int row = 0;
-
-            while (row < BOARD_SIZE) {
-                Space space = board[row][col];
-
-                // If empty, iterate and continue
-                if (space.isBlank()) {
-                    row++;
-                    continue;
-                }
-
-                // Check if this space is at the end of the vertical
-                if (row == BOARD_SIZE - 1) {
-                    if (!isLetterPartOfHorizontalWord(row, col)) {
-                        word.addSpace(space); // Add the last letter
                         foundWords.add(new Word(word));
                     }
 
                     break;
                 }
 
-                // Check if this letter is part of a vertical word
-                if (!isLetterPartOfVerticalWord(row, col)) {
-                    // Check if this letter is part of a horizontal word
-                    if (!isLetterPartOfHorizontalWord(row, col)) {
+                // Check if this letter is part of a word in the same direction
+                if (horizontalDir ? !isLetterPartOfHorizontalWord(i, index) : !isLetterPartOfVerticalWord(index, i)) {
+                    // Check if it's part of the other direction's word
+                    if (horizontalDir ? !isLetterPartOfVerticalWord(i, index) : !isLetterPartOfHorizontalWord(index, i)) {
                         // If not either, just add the single letter
                         word.addSpace(space);
                         foundWords.add(new Word(word));
                         word.clear();
                     }
 
-                    // Iterate and continue
-                    row++;
+                    //Iterate and continue
+                    index++;
                     continue;
                 }
 
+                //Add current letter to the word
                 word.addSpace(space);
 
-                // Iterate downward and collect letters in word
-                while (row + 1 < BOARD_SIZE && board[row + 1][col].containsLetter()) {
-                    row++;
-                    word.addSpace(board[row][col]);
+                //Iterate and collect letters in the word
+                while (horizontalDir ? index + 1 < BOARD_SIZE && board[i][index + 1].containsLetter()
+                        : index + 1 < BOARD_SIZE && board[index + 1][i].containsLetter()) {
+                    //Move to the next position
+                    index++;
+                    word.addSpace(horizontalDir ? board[i][index] : board[index][i]); // Add the letter
                 }
 
-                // Add the collected word to foundWords
+                //Add the collected word to foundWords
                 foundWords.add(new Word(word));
+
+                //Clear the current word for the next iteration
                 word.clear();
 
-                row++;
+                //Move to the next position
+                index++;
             }
         }
 
         return foundWords;
     }
 
+    public ArrayList<Word> findAllWords() {
+        ArrayList<Word> allWords = new ArrayList<>();
+        allWords.addAll(findWordsInDirection(true));
+        allWords.addAll(findWordsInDirection(false));
+
+        return allWords;
+    }
 
     private boolean isLetterPartOfHorizontalWord(int row, int col) {
         boolean leftFound;

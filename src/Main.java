@@ -132,13 +132,8 @@ public class Main {
 
 
         //Find all words on both boards
-        ArrayList<Word> originalWords = new ArrayList<>();
-        originalWords.addAll(originalBoard.findHorizontalWords());
-        originalWords.addAll(originalBoard.findVerticalWords());
-
-        ArrayList<Word> resultWords = new ArrayList<>();
-        resultWords.addAll(resultBoard.findHorizontalWords());
-        resultWords.addAll(resultBoard.findVerticalWords());
+        ArrayList<Word> originalWords = originalBoard.findAllWords();
+        ArrayList<Word> resultWords = resultBoard.findAllWords();
 
 
         //If the result board has fewer words, invalid
