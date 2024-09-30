@@ -43,7 +43,7 @@ public class Multiplier {
         }
     }
 
-    public boolean isMultiplierUsed() {
+    public boolean hasMultiplierBeenUsed() {
         return multiplierUsed;
     }
 

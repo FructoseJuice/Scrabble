@@ -35,6 +35,9 @@ public class Space {
     }
 
     public boolean equals(Space other) {
+        //Check for wildcards
+        if (contents.contains("*") || other.getContents().equals("*")) return true;
+
         return contents.trim().equalsIgnoreCase(other.getContents().trim());
     }
 
@@ -46,22 +49,19 @@ public class Space {
         return equals(other) && coordinateEquals(other);
     }
 
-    public int getScrabblePointValue() {
+    public int getLetterPointValue() {
         char letter = contents.trim().charAt(0); // Convert to lowercase for uniformity
 
-        int val;
-        switch (letter) {
-            case 'a', 'e', 'i', 'o', 'u', 'l', 'n', 's', 't', 'r' -> val = 1;
-            case 'd', 'g' -> val = 2;
-            case 'b', 'c', 'm', 'p' -> val = 3;
-            case 'f', 'h', 'v', 'w', 'y' -> val = 4;
-            case 'k' -> val = 5;
-            case 'j', 'x' -> val = 8;
-            case 'q', 'z' -> val = 10;
-            default -> val = 0; // Non-letter characters or invalid letters
-        }
-
-        return val;
+        return switch (letter) {
+            case 'a', 'e', 'i', 'o', 'u', 'l', 'n', 's', 't', 'r' -> 1;
+            case 'd', 'g' -> 2;
+            case 'b', 'c', 'm', 'p' -> 3;
+            case 'f', 'h', 'v', 'w', 'y' -> 4;
+            case 'k' -> 5;
+            case 'j', 'x' -> 8;
+            case 'q', 'z' -> 10;
+            default -> 0; // Non-letter characters or invalid letters
+        };
     }
 
     @Override

@@ -93,6 +93,10 @@ public class Word {
         return true;
     }
 
+    public boolean isEmpty() {
+        return word.isEmpty();
+    }
+
     public boolean coordinatesEquals(Word other) {
         for (Space mySpace : word) {
             for (Space otherSpace : other.getSpacesArray()) {

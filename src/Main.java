@@ -1,6 +1,8 @@
 import Trie.Trie;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class Main {
@@ -19,8 +21,14 @@ public class Main {
             originalBoard = initBoard("Enter original size and board:");
             resultBoard = initBoard("Enter result size and board:");
 
-            if (originalBoard.areBoardsCompatible(dictionary, resultBoard)) {
-                System.out.println(originalBoard.scorePlay(dictionary, originalBoard, resultBoard));
+            BoardCompatabilityCheckData compatabilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+
+            if (compatabilityCheckData.isLegal()) {
+                int score = scorePlay(originalBoard, compatabilityCheckData.numNewTiles(), compatabilityCheckData.newWords());
+                System.out.println(compatabilityCheckData.output());
+                System.out.println("Score: " + score);
+            } else {
+                System.out.println(compatabilityCheckData.output());
             }
         }
     }
@@ -71,6 +79,7 @@ public class Main {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         //Read in size of board, should be first line of input
+        /*
         int boardSize;
         System.out.println(inputPrompt);
         boardSize = Integer.parseInt(reader.readLine().trim());
@@ -80,6 +89,215 @@ public class Main {
             boardContents.append(reader.readLine()).append("\n");
         }
 
+         */
+        System.out.println(inputPrompt);
+
+        String line;
+        while (!Objects.equals(line = reader.readLine(), "")) {
+            boardContents.append(line).append("\n");
+        }
+
+        int boardSize = boardContents.toString().split("\n").length;
+
         return new Board(boardSize, boardContents.toString());
+    }
+
+    public static BoardCompatabilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
+        //Find play
+        Word newPlay = new Word();
+
+        //Ensure that these boards are different
+        for (int i = 0; i < originalBoard.BOARD_SIZE; i++) {
+            for (int j = 0; j < originalBoard.BOARD_SIZE; j++) {
+                //Check if these spaces are different
+                if (!originalBoard.getSpaceAtCoordinates(i, j).equals(resultBoard.getSpaceAtCoordinates(i, j))) {
+                    //If these are both blank this is a multiplier mismatch
+                    if (originalBoard.getSpaceAtCoordinates(i, j).isBlank() && resultBoard.getSpaceAtCoordinates(i, j).isBlank()) {
+                        return new BoardCompatabilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, -1);
+                    } else {
+                        //Record that a difference has been found
+                        //Do not break, because we still want to look
+                        //For multiplier mismatches
+                        newPlay.addSpace(resultBoard.getSpaceAtCoordinates(i, j));
+                    }
+                }
+            }
+        }
+
+
+        //See if any spaces have been updated
+        if (newPlay.isEmpty()) {
+            return new BoardCompatabilityCheckData(false, "No new play found.", null, -1);
+        }
+
+
+        //Find all words on both boards
+        ArrayList<Word> originalWords = new ArrayList<>();
+        originalWords.addAll(originalBoard.findHorizontalWords());
+        originalWords.addAll(originalBoard.findVerticalWords());
+
+        ArrayList<Word> resultWords = new ArrayList<>();
+        resultWords.addAll(resultBoard.findHorizontalWords());
+        resultWords.addAll(resultBoard.findVerticalWords());
+
+
+        //If the result board has fewer words, invalid
+        if (originalWords.size() > resultWords.size()) {
+            String out = "Suspicious change in word count\n";
+            out += "Original: " +  originalWords.size() + " Result: " + resultWords.size();
+            return new BoardCompatabilityCheckData(false, out, null, -1);
+        }
+
+
+        //Find new words
+        ArrayList<Word> newWords = new ArrayList<>();
+        for (Word newWord : resultWords) {
+            boolean foundInOriginalBoard = false;
+            for (Word originalWord : originalWords) {
+                if (newWord.absEquals(originalWord)) {
+                    foundInOriginalBoard = true;
+                    break;
+                }
+            }
+
+            //Check if this word is new
+            if (!foundInOriginalBoard) {
+                //This word is new
+                newWords.add(newWord);
+            }
+        }
+
+        //Check to see if any words from the original board have moved
+        for (Word originalWord : originalWords) {
+            for (Space space : originalWord.getSpacesArray()) {
+                //Check if this space is the same in the new board
+                if (!space.equals(resultBoard.getSpaceAtCoordinates(space.getRow(), space.getCol()))) {
+                    //Word has been altered in illegal way
+                    String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
+                    out += String.format("Found at (%d, %d).\n%n", space.getRow(), space.getCol());
+                    return new BoardCompatabilityCheckData(false, out, null, -1);
+                }
+            }
+        }
+
+        //Trivial case, if this was the first move
+        if (originalWords.isEmpty()) {
+            newPlay = resultWords.getFirst();
+        }
+
+        //Save play info
+        StringBuilder output = new StringBuilder();
+        output.append("Play is");
+
+        //Add new spaces to output
+        for (Space space : newPlay.getSpacesArray()) {
+            output.append(String.format(" %s -> (%d, %d),", space.getContents(), space.getRow(), space.getCol()));
+        }
+
+        output.deleteCharAt(output.length()-1);
+        output.append("\n");
+
+
+        //Check if this is the first move
+        if (originalWords.isEmpty() && resultWords.size() == 1) {
+            //Check if the middle space is occupied
+            int halfBoardSize = Math.floorDiv(originalBoard.BOARD_SIZE, 2);
+            if (resultBoard.getSpaceAtCoordinates(halfBoardSize, halfBoardSize).isBlank()) {
+                return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+            }
+        }
+
+        //Ensure that all words in new board are valid
+        for (Word word : resultWords) {
+            if (!dictionary.containsWord(word.toString())) {
+                output.append("\"").append(word.toString()).append("\" Is an invalid word.");
+                output.append("\nPlay is not legal.");
+                return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+            }
+        }
+
+
+        //Ensure all words are connected
+        if (allWordsAreConnected(resultWords)) {
+            output.append("Play is legal.");
+            return new BoardCompatabilityCheckData(true, output.toString(), newWords, newPlay.toString().length());
+        } else {
+            output.append("Play is not legal.");
+            return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+        }
+    }
+
+    public static int scorePlay(Board original, int numNewTiles, ArrayList<Word> newWords) {
+        //Score every new word
+        int score = 0;
+        for (Word word : newWords) {
+            //Check if word or letter multiplier
+            score += scoreWord(word, original);
+        }
+
+        //Bingo
+        if (numNewTiles == 7) {
+            score += 50;
+        }
+
+        return score;
+    }
+
+    private static int scoreWord(Word word, Board board) {
+        int score = 0;
+
+        ArrayList<Multiplier> wordMultipliers = new ArrayList<>();
+        Multiplier multiplier;
+        for (Space letter : word.getSpacesArray()) {
+            multiplier = board.getMultiplierAtCoordinates(letter.getRow(), letter.getCol());
+
+            if (!multiplier.hasMultiplierBeenUsed() && multiplier.type == Multiplier.MultiplierType.WORD) {
+                wordMultipliers.add(multiplier);
+            }
+
+            score += letter.getLetterPointValue();
+        }
+
+        //Apply word multipliers
+        for (Multiplier wordMultiplier : wordMultipliers) {
+            score *= wordMultiplier.getMultiplierIntValue();
+        }
+
+        return score;
+    }
+
+    private static boolean allWordsAreConnected(ArrayList<Word> allWords) {
+        HashSet<Word> connectedWords = new HashSet<>();
+
+        //Ensure all words are connected
+        boolean hasConnection;
+        for (int i = 0; i < allWords.size() - 1; i++) {
+            //If we have previously found a connection to this word,  iterate loop
+            if (connectedWords.contains(allWords.get(i))) continue;
+
+            hasConnection = false;
+
+            //Check all other words in the array
+            for (int j = 0; j < allWords.size(); j++) {
+                //Don't check ourselves
+                if (i == j) continue;
+
+                //Check if we share a letter with the other word
+                if (allWords.get(i).sharesALetterWithOtherWord(allWords.get(j))) {
+                    connectedWords.add(allWords.get(i));
+                    connectedWords.add(allWords.get(j));
+                    hasConnection = true;
+                    break;
+                }
+            }
+
+            //If this word isn't connected to anything, it's invalid
+            if (!hasConnection) {
+                System.out.println(allWords.get(i).toString() + " has no connection");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
