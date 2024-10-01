@@ -67,7 +67,7 @@ public class Main {
 
         //Try to read from disk, if in jar, try to read from class resource stream
         try {
-            inputStream = new FileInputStream("resources/dictionaries_and_examples/" + dictionaryFileName);
+            inputStream = new FileInputStream("/dictionaries_and_examples/" + dictionaryFileName);
         } catch (IOException e) {
             inputStream = Main.class.getResourceAsStream("/dictionaries_and_examples/" + dictionaryFileName);
         }
