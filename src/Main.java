@@ -9,26 +9,25 @@ public class Main {
     public static void main(String[] args) throws IOException {
         //Args for type of board
         //String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
-        String filePath = "dictionaries_and_examples\\" + args[0];
-        Trie dictionary = initTrie(filePath);
+        String dictionaryFileName = args[0];
+        Trie dictionary = initTrie(dictionaryFileName);
+
         //Board board = initBoard(filePath);
         Board originalBoard;
         Board resultBoard;
 
-        //System.out.println(originalBoard.isBoardInLegalState(dictionary));
-        //System.out.println(resultBoard.isBoardInLegalState(dictionary));
         while (true) {
             originalBoard = initBoard("Enter original size and board:");
             resultBoard = initBoard("Enter result size and board:");
 
-            BoardCompatibilityCheckData compatabilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+            BoardCompatibilityCheckData compatibilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
-            if (compatabilityCheckData.isLegal()) {
-                int score = scorePlay(originalBoard, compatabilityCheckData.numNewTiles(), compatabilityCheckData.newWords());
-                System.out.println(compatabilityCheckData.output());
+            if (compatibilityCheckData.isLegal()) {
+                int score = scorePlay(originalBoard, compatibilityCheckData.numNewTiles(), compatibilityCheckData.newWords());
+                System.out.println(compatibilityCheckData.output());
                 System.out.println("Score: " + score);
             } else {
-                System.out.println(compatabilityCheckData.output());
+                System.out.println(compatibilityCheckData.output());
             }
         }
     }
@@ -58,14 +57,24 @@ public class Main {
 
     /**
      * Makes a new trie with the specified dictionary
-     * @param filePath Path of dictionary
+     * @param dictionaryFileName Path of dictionary
      * @return New trie built from the dictionary
      */
-    public static Trie initTrie(String filePath) {
+    public static Trie initTrie(String dictionaryFileName) throws IOException {
         Trie trie = new Trie();
 
+        InputStream inputStream;
+
+        //Try to read from disk, if in jar, try to read from class resource stream
+        try {
+            inputStream = new FileInputStream("resources/dictionaries_and_examples/" + dictionaryFileName);
+        } catch (IOException e) {
+            inputStream = Main.class.getResourceAsStream("/dictionaries_and_examples/" + dictionaryFileName);
+        }
+
+
         // Using try-with-resources to ensure the BufferedReader is closed automatically
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
 
             // Read lines until "exit" is entered
@@ -76,8 +85,7 @@ public class Main {
             }
 
         } catch (IOException e) {
-            // Handle any IO exceptions
-            System.err.println("An error occurred while reading input: " + e.getMessage());
+            System.out.println("Failed to read dictionary file: " + dictionaryFileName);
         }
 
         return trie;
@@ -95,7 +103,7 @@ public class Main {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         //Read in size of board, should be first line of input
-        /*
+
         int boardSize;
         System.out.println(inputPrompt);
         boardSize = Integer.parseInt(reader.readLine().trim());
@@ -105,7 +113,8 @@ public class Main {
             boardContents.append(reader.readLine()).append("\n");
         }
 
-         */
+
+        /*
         System.out.println(inputPrompt);
 
         String line;
@@ -115,6 +124,7 @@ public class Main {
 
         int boardSize = boardContents.toString().split("\n").length;
 
+         */
         return new Board(boardSize, boardContents.toString());
     }
 
