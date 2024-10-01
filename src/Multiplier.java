@@ -1,3 +1,8 @@
+/**
+ * This class describes a Multiplier in scrabble
+ * It defines the type of multiplier it is, Word, or Letter,
+ * and the value of it, One, Two, or Three.
+ */
 public class Multiplier {
     public enum MultiplierType {
         WORD, LETTER
@@ -43,10 +48,16 @@ public class Multiplier {
         }
     }
 
+    /**
+     * Check if this multiplier has been used already
+     */
     public boolean hasMultiplierBeenUsed() {
         return multiplierUsed;
     }
 
+    /**
+     * Converts the multiplier enum to an int
+     */
     public int getMultiplierIntValue() {
         return switch (value) {
             case ONE -> 1;

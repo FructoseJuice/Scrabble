@@ -21,7 +21,7 @@ public class Main {
             originalBoard = initBoard("Enter original size and board:");
             resultBoard = initBoard("Enter result size and board:");
 
-            BoardCompatabilityCheckData compatabilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+            BoardCompatibilityCheckData compatabilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
             if (compatabilityCheckData.isLegal()) {
                 int score = scorePlay(originalBoard, compatabilityCheckData.numNewTiles(), compatabilityCheckData.newWords());
@@ -33,6 +33,12 @@ public class Main {
         }
     }
 
+    /**
+     * Parse the command line for the board file path. Then reads the
+     * board from the specified path.
+     * @param args CLI args
+     * @return the board as a string
+     */
     public static String parseCLIForBoardFilePath(String[] args) {
         if (args.length == 0) {
             return "scrabble_board";
@@ -50,6 +56,11 @@ public class Main {
         };
     }
 
+    /**
+     * Makes a new trie with the specified dictionary
+     * @param filePath Path of dictionary
+     * @return New trie built from the dictionary
+     */
     public static Trie initTrie(String filePath) {
         Trie trie = new Trie();
 
@@ -73,6 +84,11 @@ public class Main {
     }
 
 
+    /**
+     * Initializes a board from user input
+     * @param inputPrompt Input prompt to give the user
+     * @return New Board from user input
+     */
     public static Board initBoard(String inputPrompt) throws IOException {
         StringBuilder boardContents = new StringBuilder();
 
@@ -102,7 +118,22 @@ public class Main {
         return new Board(boardSize, boardContents.toString());
     }
 
-    public static BoardCompatabilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
+    /**
+     * Checks if two boards are compatible, between the originalBoard and the resultBoard.
+     * For two boards to be compatible, these conditions must be met:
+     * Both boards must have matching multipliers
+     * No words from the originalBoard should have moved in the result board
+     * More specifically: No letters from the originalBoard should have been tampered with
+     * The resultBoard must contain new letters
+     * The resultBoard must have new words that are legal
+     * The resultBoard must have only legal words
+     * All words in the resultBoard must be connected
+     * @param dictionary Dictionary of legal words
+     * @param originalBoard Original Board
+     * @param resultBoard Original Board after a move has been made
+     * @return Data describing how the compatibility check went
+     */
+    public static BoardCompatibilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
         //Find play
         Word newPlay = new Word();
 
@@ -113,7 +144,7 @@ public class Main {
                 if (!originalBoard.getSpaceAtCoordinates(i, j).equals(resultBoard.getSpaceAtCoordinates(i, j))) {
                     //If these are both blank this is a multiplier mismatch
                     if (originalBoard.getSpaceAtCoordinates(i, j).isBlank() && resultBoard.getSpaceAtCoordinates(i, j).isBlank()) {
-                        return new BoardCompatabilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, -1);
+                        return new BoardCompatibilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, -1);
                     } else {
                         //Record that a difference has been found
                         //Do not break, because we still want to look
@@ -127,7 +158,7 @@ public class Main {
 
         //See if any spaces have been updated
         if (newPlay.isEmpty()) {
-            return new BoardCompatabilityCheckData(false, "No new play found.", null, -1);
+            return new BoardCompatibilityCheckData(false, "No new play found.", null, -1);
         }
 
 
@@ -140,7 +171,7 @@ public class Main {
         if (originalWords.size() > resultWords.size()) {
             String out = "Suspicious change in word count\n";
             out += "Original: " +  originalWords.size() + " Result: " + resultWords.size();
-            return new BoardCompatabilityCheckData(false, out, null, -1);
+            return new BoardCompatibilityCheckData(false, out, null, -1);
         }
 
 
@@ -170,7 +201,7 @@ public class Main {
                     //Word has been altered in illegal way
                     String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
                     out += String.format("Found at (%d, %d).\n%n", space.getRow(), space.getCol());
-                    return new BoardCompatabilityCheckData(false, out, null, -1);
+                    return new BoardCompatibilityCheckData(false, out, null, -1);
                 }
             }
         }
@@ -198,7 +229,7 @@ public class Main {
             //Check if the middle space is occupied
             int halfBoardSize = Math.floorDiv(originalBoard.BOARD_SIZE, 2);
             if (resultBoard.getSpaceAtCoordinates(halfBoardSize, halfBoardSize).isBlank()) {
-                return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+                return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
             }
         }
 
@@ -207,7 +238,7 @@ public class Main {
             if (!dictionary.containsWord(word.toString())) {
                 output.append("\"").append(word.toString()).append("\" Is an invalid word.");
                 output.append("\nPlay is not legal.");
-                return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+                return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
             }
         }
 
@@ -215,13 +246,20 @@ public class Main {
         //Ensure all words are connected
         if (allWordsAreConnected(resultWords)) {
             output.append("Play is legal.");
-            return new BoardCompatabilityCheckData(true, output.toString(), newWords, newPlay.toString().length());
+            return new BoardCompatibilityCheckData(true, output.toString(), newWords, newPlay.toString().length());
         } else {
             output.append("Play is not legal.");
-            return new BoardCompatabilityCheckData(false, output.toString(), null, -1);
+            return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
         }
     }
 
+    /**
+     * Score a play made
+     * @param original Original board, used for multiplier values
+     * @param numNewTiles Number of tiles placed
+     * @param newWords New words formed
+     * @return Score value of this play
+     */
     public static int scorePlay(Board original, int numNewTiles, ArrayList<Word> newWords) {
         //Score every new word
         int score = 0;
@@ -238,19 +276,25 @@ public class Main {
         return score;
     }
 
+    /**
+     * Scores an individual word. Takes into account the word multiplier, and letter multipliers.
+     * @param word Word to score
+     * @param board Board that contains the multipliers
+     * @return Score value of this word
+     */
     private static int scoreWord(Word word, Board board) {
         int score = 0;
 
         ArrayList<Multiplier> wordMultipliers = new ArrayList<>();
         Multiplier multiplier;
-        for (Space letter : word.getSpacesArray()) {
-            multiplier = board.getMultiplierAtCoordinates(letter.getRow(), letter.getCol());
+        for (Space space : word.getSpacesArray()) {
+            multiplier = board.getMultiplierAtCoordinates(space.getRow(), space.getCol());
 
             if (!multiplier.hasMultiplierBeenUsed() && multiplier.type == Multiplier.MultiplierType.WORD) {
                 wordMultipliers.add(multiplier);
             }
 
-            score += letter.getLetterPointValue();
+            score += space.getLetterPointValue();
         }
 
         //Apply word multipliers
@@ -261,6 +305,12 @@ public class Main {
         return score;
     }
 
+    /**
+     * Ensures that all words have a connection to another.
+     * Fundamentally checks, if all words share a space with another word.
+     * @param allWords All words on the board
+     * @return If all the words are connected
+     */
     private static boolean allWordsAreConnected(ArrayList<Word> allWords) {
         HashSet<Word> connectedWords = new HashSet<>();
 
@@ -278,7 +328,7 @@ public class Main {
                 if (i == j) continue;
 
                 //Check if we share a letter with the other word
-                if (allWords.get(i).sharesALetterWithOtherWord(allWords.get(j))) {
+                if (allWords.get(i).sharesASpaceWithAnotherWord(allWords.get(j))) {
                     connectedWords.add(allWords.get(i));
                     connectedWords.add(allWords.get(j));
                     hasConnection = true;

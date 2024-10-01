@@ -1,6 +1,14 @@
 import java.util.ArrayList;
 
+/**
+ * Brandon W. Hidalgo
+ * This class describes a word. A word is just
+ * an array of letters. This class provides a way to
+ * easily encapsulate a full scrabble word. It provides
+ * methods to compare words and access parts of this word.
+ */
 public class Word {
+    //Holds all the letters in this word
     private final ArrayList<Space> word;
 
     public Word() {
@@ -15,10 +23,18 @@ public class Word {
         this.word = new ArrayList<>(word.getSpacesArray());
     }
 
-    public void addSpace(Space letter) {
-        word.add(letter);
+
+    /**
+     * Adds a new space to this word.
+     * @param space Space to add
+     */
+    public void addSpace(Space space) {
+        word.add(space);
     }
 
+    /**
+     * Returns raw version of word, just an array of spaces
+     */
     public ArrayList<Space> getSpacesArray() {
         return word;
     }
@@ -29,6 +45,12 @@ public class Word {
         }
     }
 
+    /**
+     * Checks if this word contains the exact space given.
+     * This check is done through the use of space.absEquals()
+     * @param space Space to check for
+     * @return If this word contains the specified space
+     */
     public boolean absContains(Space space) {
         for (Space mySpace : word) {
             if (mySpace.absEquals(space)) {
@@ -39,11 +61,20 @@ public class Word {
         return false;
     }
 
+    /**
+     * Empties this word out
+     */
     public void clear() {
         this.word.clear();
     }
 
-    public boolean sharesALetterWithOtherWord(Word other) {
+    /**
+     * Checks if this word shares a space with another word. This
+     * method uses space.absEquals() to check equality between each space.
+     * @param other Word to compare with
+     * @return If these two words share a space
+     */
+    public boolean sharesASpaceWithAnotherWord(Word other) {
         for (Space mySpace : word) {
             for (Space otherSpace : other.getSpacesArray()) {
                 if (mySpace.absEquals(otherSpace)) {
@@ -55,6 +86,13 @@ public class Word {
         return false;
     }
 
+    /**
+     * Uses space.equals() to check for equality between words. This
+     * is a loose equality check, and is only done between the letters
+     * of each word.
+     * @param other Word to compare with
+     * @return If these two words are loosely equal
+     */
     public boolean equals(Word other) {
         for (Space mySpace : word) {
             for (Space otherSpace : other.getSpacesArray()) {
@@ -67,10 +105,22 @@ public class Word {
         return true;
     }
 
+    /**
+     * Returns letter at index i in the letter array
+     * @param i index of letter
+     * @return word.get(i)
+     */
     public Space getSpaceAtIndex(int i) {
         return word.get(i);
     }
 
+    /**
+     * Checks for absolute equality between two words. This method not
+     * only checks for equality between the letters of the words, but
+     * also the coordinates of the letters.
+     * @param other Word to compare with
+     * @return If these two words are absolutely equal
+     */
     public boolean absEquals(Word other) {
         //Trivial check of size
         if (word.size() != other.getSpacesArray().size()) {
@@ -79,12 +129,7 @@ public class Word {
 
         //Check if each space is equal in letter and coordinates
         for (int i = 0; i < word.size(); i++) {
-            //Compare letter
-            if (!word.get(i).equals(other.getSpaceAtIndex(i))) {
-                return false;
-            }
-            //Compare coordinates
-            if (!word.get(i).coordinateEquals(other.getSpaceAtIndex(i))) {
+            if (!word.get(i).absEquals(other.getSpaceAtIndex(i))) {
                 return false;
             }
         }
@@ -93,28 +138,21 @@ public class Word {
         return true;
     }
 
+    /**
+     * Check if this word is empty. Meaning there are
+     * no letters int the letter array.
+     * @return If this word is empty
+     */
     public boolean isEmpty() {
         return word.isEmpty();
-    }
-
-    public boolean coordinatesEquals(Word other) {
-        for (Space mySpace : word) {
-            for (Space otherSpace : other.getSpacesArray()) {
-                if (!mySpace.coordinateEquals(otherSpace)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (Space letter : word) {
-            builder.append(letter.toString().trim());
+        for (Space space : word) {
+            builder.append(space.toString().trim());
         }
 
         return builder.toString();

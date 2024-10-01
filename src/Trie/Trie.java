@@ -2,11 +2,21 @@ package Trie;
 
 import java.util.HashMap;
 
+/**
+ * Brandon W. Hidalgo
+ * This class is a Trie. It provides O(n) time, where
+ * n = length(word), to access every word in a dictionary.
+ * Has functions to add words, and check for the existence of words.
+ */
 public class Trie {
     private final HashMap<Character, ConnectionTree> rootConnectionTrees = new HashMap<>();
 
     public Trie() {}
 
+    /**
+     * Adds a new word to the dictionary
+     * @param word word to add
+     */
     public void addWord(String word) {
         ConnectionTree newConnection;
 
@@ -40,6 +50,11 @@ public class Trie {
         newConnection.setTerminator();
     }
 
+    /**
+     * Checks if this word is in the dictionary
+     * @param word word to check for
+     * @return if the dictionary contains this word
+     */
     public boolean containsWord(String word) {
         //Ensure this word is in all lowercase
         word = word.toLowerCase();

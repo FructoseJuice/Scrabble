@@ -1,9 +1,14 @@
-import Trie.Trie;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Brandon W. Hidalgo
+ * This class describes the scrabble board. It has
+ * a board for all the spaces, and a board for the multipliers.
+ * They used to be just one, but because of requirements for this project,
+ * I had to split them apart. This class defines methods to extract all the
+ * words contained, spaces at specified coordinates, and multipliers.
+ */
 public class Board {
     private final Space[][] board;
     private final Multiplier[][] multiplierBoard;
@@ -42,6 +47,16 @@ public class Board {
         }
     }
 
+    /**
+     * Find all the words on this board in the specified direction
+     *
+     * This method used to be two, but I had ChatGPT combine them for me
+     * and in doing so left a lot of kinda nasty ternary operators.
+     * Luckily, I haven't had to mess with it.
+     *
+     * @param horizontalDir If this function should find words in the horizontal direction
+     * @return ArrayList<Word> all words found in that direction</Word>
+     */
     private ArrayList<Word> findWordsInDirection(boolean horizontalDir) {
         ArrayList<Word> foundWords = new ArrayList<>();
 
@@ -111,6 +126,11 @@ public class Board {
         return foundWords;
     }
 
+    /**
+     * Finds all words on the board.
+     * Just packs up the result of calling findWordsInDirection in both
+     * directions and returns the result.
+     */
     public ArrayList<Word> findAllWords() {
         ArrayList<Word> allWords = new ArrayList<>();
         allWords.addAll(findWordsInDirection(true));
@@ -119,6 +139,12 @@ public class Board {
         return allWords;
     }
 
+    /**
+     * Check if a letter has another letter to the left or right of it.
+     * If the letter is at the edge of the board, that side of the letter
+     * will be true
+     * @return If this letter is part of a horizontal word
+     */
     private boolean isLetterPartOfHorizontalWord(int row, int col) {
         boolean leftFound;
         boolean rightFound;
@@ -138,6 +164,9 @@ public class Board {
         return leftFound || rightFound;
     }
 
+    /**
+     * Checks if a letter is part of a larger vertical word
+     */
     private boolean isLetterPartOfVerticalWord(int row, int col) {
         boolean belowFound;
         boolean aboveFound;
@@ -158,16 +187,27 @@ public class Board {
     }
 
 
-
+    /**
+     * Returns the space contained on the board at the specified coordinates
+     * @param row row
+     * @param col column
+     * @return Space at coordinates (row, column)
+     */
     public Space getSpaceAtCoordinates(int row, int col) {
         return board[row][col];
     }
 
+    /**
+     * Returns multiplier at coordinates (row, col)
+     */
     public Multiplier getMultiplierAtCoordinates(int row, int col) {
         return multiplierBoard[row][col];
     }
 
 
+    /**
+     * Pretty string of board
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
