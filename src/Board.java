@@ -10,13 +10,13 @@ import java.util.List;
  * words contained, spaces at specified coordinates, and multipliers.
  */
 public class Board {
-    private final Space[][] board;
+    private final Tile[][] board;
     private final Multiplier[][] multiplierBoard;
     public final int BOARD_SIZE;
 
     public Board(int size, String initContents) {
         this.BOARD_SIZE = size;
-        board = new Space[size][size];
+        board = new Tile[size][size];
         multiplierBoard = new Multiplier[size][size];
 
         //Initialize empty board so that we can score later on
@@ -39,7 +39,7 @@ public class Board {
                 spaceContent = row.get(j);
 
                 //Add space to board
-                board[i][j] = new Space(spaceContent, i, j);
+                board[i][j] = new Tile(spaceContent, i, j);
 
                 //Add multiplier to board
                 multiplierBoard[i][j] = new Multiplier(spaceContent);
@@ -67,10 +67,10 @@ public class Board {
             int index = 0;
 
             while (index < BOARD_SIZE) {
-                Space space = horizontalDir ? board[i][index] : board[index][i];
+                Tile tile = horizontalDir ? board[i][index] : board[index][i];
 
                 //If empty, iterate and continue
-                if (space.isBlank()) {
+                if (tile.isBlank()) {
                     index++;
                     continue;
                 }
@@ -79,7 +79,7 @@ public class Board {
                 if (index == BOARD_SIZE - 1) {
                     if (!isLetterPartOfHorizontalWord(horizontalDir ? i : index, horizontalDir ? index : i)) {
                         // Add the last letter
-                        word.addSpace(space);
+                        word.addSpace(tile);
                         foundWords.add(new Word(word));
                     }
 
@@ -91,7 +91,7 @@ public class Board {
                     // Check if it's part of the other direction's word
                     if (horizontalDir ? !isLetterPartOfVerticalWord(i, index) : !isLetterPartOfHorizontalWord(index, i)) {
                         // If not either, just add the single letter
-                        word.addSpace(space);
+                        word.addSpace(tile);
                         foundWords.add(new Word(word));
                         word.clear();
                     }
@@ -102,7 +102,7 @@ public class Board {
                 }
 
                 //Add current letter to the word
-                word.addSpace(space);
+                word.addSpace(tile);
 
                 //Iterate and collect letters in the word
                 while (horizontalDir ? index + 1 < BOARD_SIZE && board[i][index + 1].containsLetter()
@@ -193,7 +193,7 @@ public class Board {
      * @param col column
      * @return Space at coordinates (row, column)
      */
-    public Space getSpaceAtCoordinates(int row, int col) {
+    public Tile getSpaceAtCoordinates(int row, int col) {
         return board[row][col];
     }
 
@@ -212,8 +212,8 @@ public class Board {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (Space[] row : board) {
-            for (Space tile : row) {
+        for (Tile[] row : board) {
+            for (Tile tile : row) {
                 //Add extra space to prettify characters
                 if (tile.toString().length() == 1) {
                     builder.append(" ");

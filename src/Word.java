@@ -9,13 +9,13 @@ import java.util.ArrayList;
  */
 public class Word {
     //Holds all the letters in this word
-    private final ArrayList<Space> word;
+    private final ArrayList<Tile> word;
 
     public Word() {
         word = new ArrayList<>();
     }
 
-    public Word(ArrayList<Space> word) {
+    public Word(ArrayList<Tile> word) {
         this.word = word;
     }
 
@@ -26,34 +26,34 @@ public class Word {
 
     /**
      * Adds a new space to this word.
-     * @param space Space to add
+     * @param tile Space to add
      */
-    public void addSpace(Space space) {
-        word.add(space);
+    public void addSpace(Tile tile) {
+        word.add(tile);
     }
 
     /**
      * Returns raw version of word, just an array of spaces
      */
-    public ArrayList<Space> getSpacesArray() {
+    public ArrayList<Tile> getSpacesArray() {
         return word;
     }
 
-    public void insertIfAbsAbsent(Space space) {
-        if (!absContains(space)) {
-            addSpace(space);
+    public void insertIfAbsAbsent(Tile tile) {
+        if (!absContains(tile)) {
+            addSpace(tile);
         }
     }
 
     /**
      * Checks if this word contains the exact space given.
      * This check is done through the use of space.absEquals()
-     * @param space Space to check for
+     * @param tile Space to check for
      * @return If this word contains the specified space
      */
-    public boolean absContains(Space space) {
-        for (Space mySpace : word) {
-            if (mySpace.absEquals(space)) {
+    public boolean absContains(Tile tile) {
+        for (Tile myTile : word) {
+            if (myTile.absEquals(tile)) {
                 return true;
             }
         }
@@ -75,9 +75,9 @@ public class Word {
      * @return If these two words share a space
      */
     public boolean sharesASpaceWithAnotherWord(Word other) {
-        for (Space mySpace : word) {
-            for (Space otherSpace : other.getSpacesArray()) {
-                if (mySpace.absEquals(otherSpace)) {
+        for (Tile myTile : word) {
+            for (Tile otherTile : other.getSpacesArray()) {
+                if (myTile.absEquals(otherTile)) {
                     return true;
                 }
             }
@@ -94,9 +94,9 @@ public class Word {
      * @return If these two words are loosely equal
      */
     public boolean equals(Word other) {
-        for (Space mySpace : word) {
-            for (Space otherSpace : other.getSpacesArray()) {
-                if (!mySpace.equals(otherSpace)) {
+        for (Tile myTile : word) {
+            for (Tile otherTile : other.getSpacesArray()) {
+                if (!myTile.equals(otherTile)) {
                     return false;
                 }
             }
@@ -110,7 +110,7 @@ public class Word {
      * @param i index of letter
      * @return word.get(i)
      */
-    public Space getSpaceAtIndex(int i) {
+    public Tile getSpaceAtIndex(int i) {
         return word.get(i);
     }
 
@@ -151,8 +151,8 @@ public class Word {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (Space space : word) {
-            builder.append(space.toString().trim());
+        for (Tile tile : word) {
+            builder.append(tile.toString().trim());
         }
 
         return builder.toString();
