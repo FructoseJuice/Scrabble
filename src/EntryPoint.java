@@ -92,7 +92,7 @@ public class EntryPoint {
 
             //Try till not null
             if (line == null) {
-                int tries = 0;z
+                int tries = 0;
                 while (tries < 3 && (line = reader.readLine()) == null) {
                     tries++;
                 }
