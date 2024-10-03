@@ -1,3 +1,5 @@
+package utils;
+
 public class Pair <T, V> {
     private T fst;
     private V snd;

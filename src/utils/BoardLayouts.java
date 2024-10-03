@@ -1,3 +1,5 @@
+package utils;
+
 public class BoardLayouts {
     public static String getBoardLayout(int size) {
         if (size == 7) {

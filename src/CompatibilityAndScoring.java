@@ -1,10 +1,11 @@
 import Trie.Trie;
+import utils.Pair;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class Main {
+public class CompatibilityAndScoring {
     public static void main(String[] args) throws IOException {
         //Args for type of board
         //String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
@@ -38,34 +39,11 @@ public class Main {
     }
 
     /**
-     * Parse the command line for the board file path. Then reads the
-     * board from the specified path.
-     * @param args CLI args
-     * @return the board as a string
-     */
-    public static String parseCLIForBoardFilePath(String[] args) {
-        if (args.length == 0) {
-            return "scrabble_board";
-        }
-
-        return switch (args[0]) {
-            case "-r" -> "scrabble_board";
-            case "-su" -> "superscrabble_board";
-            case "-w" -> "wordswithfriends_board";
-            case "-sm" -> "small_board";
-            default -> {
-                System.out.println("Unknown option: " + args[0] + "\nDefaulting to regular board.");
-                yield "scrabble_board";
-            }
-        };
-    }
-
-    /**
      * Makes a new trie with the specified dictionary
      * @param dictionaryFilePath Path of dictionary
      * @return New trie built from the dictionary
      */
-    public static Trie initTrie(String dictionaryFilePath) throws IOException {
+    public static Trie initTrie(String dictionaryFilePath) {
         Trie trie = new Trie();
 
         InputStream inputStream;
@@ -75,7 +53,7 @@ public class Main {
             inputStream = new FileInputStream(dictionaryFilePath);
         } catch (IOException e) {
             //Try to read from local dictionaries
-            inputStream = Main.class.getResourceAsStream("dictionaries_and_examples/" + dictionaryFilePath);
+            inputStream = CompatibilityAndScoring.class.getResourceAsStream("dictionaries_and_examples/" + dictionaryFilePath);
         }
 
 
