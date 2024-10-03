@@ -88,7 +88,24 @@ public class EntryPoint {
 
         System.out.println("Enter original and result boards in this format for each: \n{board size}\n{board}");
         for (int n = 0; n < num; n++) {
-            boardSize = Integer.parseInt(reader.readLine().trim());
+            String line = reader.readLine();
+
+            //Try till not null
+            if (line == null) {
+                int tries = 0;z
+                while (tries < 3 && (line = reader.readLine()) == null) {
+                    tries++;
+                }
+            }
+
+            if (line == null) return null;
+
+            //If blank try to read next line
+            if (line.isEmpty()) {
+                line = reader.readLine();
+            }
+
+            boardSize = Integer.parseInt(line.trim());
 
             //Read each row
             for (int i = 0; i < boardSize; i++) {

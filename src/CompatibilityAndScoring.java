@@ -14,8 +14,13 @@ public class CompatibilityAndScoring extends EntryPoint{
         while (true) {
             Pair<Board, Board> newBoards = readNumBoardsFromCli(2);
 
+            if (newBoards == null) break;
+
             originalBoard = newBoards.getFst();
             resultBoard = newBoards.getSnd();
+
+            System.out.println(originalBoard.toString());
+            System.out.println(resultBoard.toString());
 
             BoardCompatibilityCheckData compatibilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
