@@ -3,12 +3,16 @@ import Trie.Trie;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         //Args for type of board
         //String filePath = "dictionaries_and_examples\\" + parseCLIForBoardFilePath(args);
+        if (args.length == 0) {
+            System.out.println("Expected dictionary file path.");
+            System.exit(1);
+        }
+
         String dictionaryFileName = args[0];
         Trie dictionary = initTrie(dictionaryFileName);
 
@@ -17,8 +21,9 @@ public class Main {
         Board resultBoard;
 
         while (true) {
-            originalBoard = initBoard("Enter original size and board:");
-            resultBoard = initBoard("Enter result size and board:");
+            Pair<Board, Board> newBoards = readTwoBoardsFromCLI();
+            originalBoard = newBoards.getFst();
+            resultBoard = newBoards.getSnd();
 
             BoardCompatibilityCheckData compatibilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
@@ -57,19 +62,20 @@ public class Main {
 
     /**
      * Makes a new trie with the specified dictionary
-     * @param dictionaryFileName Path of dictionary
+     * @param dictionaryFilePath Path of dictionary
      * @return New trie built from the dictionary
      */
-    public static Trie initTrie(String dictionaryFileName) throws IOException {
+    public static Trie initTrie(String dictionaryFilePath) throws IOException {
         Trie trie = new Trie();
 
         InputStream inputStream;
 
-        //Try to read from disk, if in jar, try to read from class resource stream
+        //Try to read from disk local to this package
         try {
-            inputStream = new FileInputStream("/dictionaries_and_examples/" + dictionaryFileName);
+            inputStream = new FileInputStream(dictionaryFilePath);
         } catch (IOException e) {
-            inputStream = Main.class.getResourceAsStream("/dictionaries_and_examples/" + dictionaryFileName);
+            //Try to read from local dictionaries
+            inputStream = Main.class.getResourceAsStream("dictionaries_and_examples/" + dictionaryFilePath);
         }
 
 
@@ -85,7 +91,7 @@ public class Main {
             }
 
         } catch (IOException e) {
-            System.out.println("Failed to read dictionary file: " + dictionaryFileName);
+            System.out.println("Failed to read dictionary file: " + dictionaryFilePath);
         }
 
         return trie;
@@ -93,11 +99,13 @@ public class Main {
 
 
     /**
-     * Initializes a board from user input
-     * @param inputPrompt Input prompt to give the user
+     * Initializes 2 boards from user input
      * @return New Board from user input
      */
-    public static Board initBoard(String inputPrompt) throws IOException {
+    public static Pair<Board, Board> readTwoBoardsFromCLI() throws IOException {
+        //Boards to return
+        Pair<Board, Board> newBoards = new Pair<>();
+
         StringBuilder boardContents = new StringBuilder();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -105,7 +113,7 @@ public class Main {
         //Read in size of board, should be first line of input
 
         int boardSize;
-        System.out.println(inputPrompt);
+        System.out.println("Enter original and result boards in this format for each: \n{board size}\n{board}");
         boardSize = Integer.parseInt(reader.readLine().trim());
 
         //Read each row
@@ -113,19 +121,23 @@ public class Main {
             boardContents.append(reader.readLine()).append("\n");
         }
 
+        //Initialize first board
+        newBoards.setFst(new Board(boardSize, boardContents.toString()));
 
-        /*
-        System.out.println(inputPrompt);
+        //Clear board contents
+        boardContents.setLength(0);
 
-        String line;
-        while (!Objects.equals(line = reader.readLine(), "")) {
-            boardContents.append(line).append("\n");
+        boardSize = Integer.parseInt(reader.readLine().trim());
+
+        //Read each row
+        for (int i = 0; i < boardSize; i++) {
+            boardContents.append(reader.readLine()).append("\n");
         }
 
-        int boardSize = boardContents.toString().split("\n").length;
+        //Initialize second
+        newBoards.setSnd(new Board(boardSize, boardContents.toString()));
 
-         */
-        return new Board(boardSize, boardContents.toString());
+        return newBoards;
     }
 
     /**
