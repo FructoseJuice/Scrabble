@@ -84,4 +84,39 @@ public class Trie {
         //This should be the leaf, so we return if this is a terminator or not
         return connectionTree.isATerminatorNode();
     }
+
+    /**
+     * Checks if this sequence is in the dictionary
+     * @param word word to check for
+     * @return if the dictionary contains this word
+     */
+    public boolean containsSequence(String word) {
+        //Ensure this word is in all lowercase
+        word = word.toLowerCase();
+
+        ConnectionTree connectionTree;
+
+        //Check to see if first character is at the root of the tree
+        if (rootConnectionTrees.containsKey(word.charAt(0))) {
+            connectionTree = rootConnectionTrees.get(word.charAt(0));
+        } else {
+            return false;
+        }
+
+        char connectionChar;
+        for (int i = 1; i < word.length(); i++) {
+            connectionChar = word.charAt(i);
+
+            //Check if the previous letter has a connection to this letter
+            if (connectionTree.hasConnection(connectionChar)) {
+                connectionTree = connectionTree.getConnection(connectionChar);
+            } else {
+                //If a connection wasn't found here, this word does not exist in the current dictionary
+                return false;
+            }
+        }
+
+        //This should be the leaf, so we return if this is a terminator or not
+        return true;
+    }
 }
