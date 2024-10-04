@@ -32,12 +32,25 @@ public class Word {
         word.add(tile);
     }
 
+    public void addSpaceToFront(Tile tile) {
+        word.addFirst(tile);
+    }
+
+    public void addSpaceToEnd(Tile tile) {
+        word.addLast(tile);
+    }
+
+    public void removeLetter(Tile letter) {
+        getSpacesArray().removeIf(myLetter -> myLetter.equals(letter));
+    }
+
     /**
      * Returns raw version of word, just an array of spaces
      */
     public ArrayList<Tile> getSpacesArray() {
         return word;
     }
+
 
     public void reverse() {
         int start = 0;
@@ -155,6 +168,14 @@ public class Word {
      */
     public boolean isEmpty() {
         return word.isEmpty();
+    }
+
+    public int size() {
+        return word.size();
+    }
+
+    public void mergeToEnd(Word other) {
+        word.addAll(new ArrayList<>(other.getSpacesArray()));
     }
 
     @Override

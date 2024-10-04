@@ -19,10 +19,6 @@ public class Tray extends Word {
         super(word);
     }
 
-    public void removeLetter(Tile letter) {
-        getSpacesArray().removeIf(myLetter -> myLetter.equals(letter));
-    }
-
 
     /*
     Gut some functionality that wouldn't properly work

@@ -23,6 +23,12 @@ public class Tile {
         this.col = col;
     }
 
+    public Tile(Tile other) {
+        this.contents = other.getContents();
+        this.row = other.getRow();
+        this.col = other.getCol();
+    }
+
     public int getCol() {
         return col;
     }

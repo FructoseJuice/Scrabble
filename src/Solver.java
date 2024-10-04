@@ -5,7 +5,6 @@ import utils.Side;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 
 public class Solver extends EntryPoint {
@@ -13,17 +12,24 @@ public class Solver extends EntryPoint {
         //Load dictionary
         Trie dictionary = parseClIForTrie(args);
 
-        Board originalBoard;
         while (true) {
             Pair<Board, Tray> boardAndTray = readBoardAndTrayFromCLI();
 
             if (boardAndTray == null) break;
 
-            originalBoard = boardAndTray.getFst();
+            System.out.println(boardAndTray.getFst().toString());
+            System.out.println(boardAndTray.getSnd().toString());
 
-            System.out.println(originalBoard.toString());
+            //Generate anchor spaces
+            ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = generateAnchors(boardAndTray.getFst());
+            //Transpose board and generate more anchors
 
-            generateHorizontalWords(originalBoard, boardAndTray.getSnd());
+            //Generate possible moves from anchor spaces
+            ArrayList<Word> possibleWords = generatePossibleMoves(dictionary, boardAndTray.getFst(), boardAndTray.getSnd(), anchorSpaces);
+            System.out.println();
+            //Prune illegal moves and find the highest scorer
+            //Use Max heap for this
+
         }
     }
 
@@ -83,7 +89,13 @@ public class Solver extends EntryPoint {
         return newBoardAndTray;
     }
 
-    public static ArrayList<Word> generateHorizontalWords(Board originalBoard, Tray tray) {
+    /**
+     * Finds all "anchors" on the board. An anchor is an empty space immediately to the left
+     * or right of a letter.
+     * @param originalBoard Board to check
+     * @return All anchors
+     */
+    public static ArrayList<Pair<Pair<Tile, Word>, Side>> generateAnchors(Board originalBoard) {
         ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = new ArrayList<>();
 
         // Traverse board for anchors
@@ -130,10 +142,170 @@ public class Solver extends EntryPoint {
             }
         }
 
-        System.out.println();
-        // Generate moves from anchors
+        return anchorSpaces;
+    }
+
+    /**
+     * Generate all the possible moves that the AI can make
+     * @param originalBoard Board to place on
+     * @param anchors Anchor positions and linked words
+     * @return Possible moves
+     */
+    public static ArrayList<Word> generatePossibleMoves(Trie dictionary, Board originalBoard, Tray tray, ArrayList<Pair<Pair<Tile, Word>, Side>> anchors) {
+        /*
+        For left words ->
+
+        if k = length tray
+        and j = anchor col
+        iterate from j-1 to j-k
+
+        proc:
+        at j-i, take tile t out of tray,
+        If Trie has sequence t + anchor.word
+            i--
+            proc()
+         */
+        ArrayList<Word> possibleWords = new ArrayList<>();
+
+        int anchorCol;
+        int anchorRow;
+        int j;
+        int traySize = tray.size();
+
+        // Find possible moves to left and right of anchor words
+        for (Pair<Pair<Tile, Word>, Side> anchor : anchors) {
+            // Get col of anchor
+            anchorCol = anchor.getFst().getFst().getCol();
+            anchorRow = anchor.getFst().getFst().getRow();
+            j = anchorCol;
+
+            if (anchor.getSnd() == Side.LEFT) {
+                permuteLeft(dictionary, originalBoard, possibleWords, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
+            } else {
+                permuteRight(dictionary, originalBoard, possibleWords, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
+            }
+        }
+
+        // Remove any duplicates
 
 
+        return possibleWords;
+    }
+
+
+    private static void permuteLeft(
+            Trie dictionary, Board board, ArrayList<Word> possible,
+            Word permutation, Tray tray, int anchorRow, int currCol) {
+
+        // Stop searching left if at bounds of board or tray empty
+        if (currCol < 0 || tray.isEmpty()) return;
+
+        // If Board has a tile at this location we have to account for that
+        if (board.getSpaceAtCoordinates(anchorRow, currCol).containsLetter()) {
+            // Grab tile at these coordinates
+            Tile newTile = new Tile(board.getSpaceAtCoordinates(anchorRow, currCol));
+            // Add to front of permutation
+            permutation.addSpaceToFront(newTile);
+            // Check if sequence is in trie
+            Word newWord = new Word(permutation);
+
+            if (dictionary.containsSequence(newWord.toString())) {
+                // Add possible word
+                possible.add(newWord);
+                // Continue decrementing left
+                currCol--;
+            } else {
+                // Remove new tile from permutation
+                permutation.getSpacesArray().removeFirst();
+                return;
+            }
+        }
+
+        // Iterate through tray
+        for (int i = 0; i < tray.size(); i++) {
+            // Take tile at index i out of tray
+            Tile tile = tray.getSpacesArray().remove(i);
+            // Add this tile to front of permutation word
+            permutation.addSpaceToFront(new Tile(tile.getContents(), anchorRow, currCol));
+            // Check if this sequence is in trie
+            Word newWord = new Word(permutation);
+
+            if (dictionary.containsSequence(newWord.toString())) {
+                // Add to possible words
+                possible.add(newWord);
+                // Continue permutation
+                permuteLeft(dictionary, board, possible, new Word(newWord), tray, anchorRow, currCol-1);
+                // Add back to tray
+                tray.getSpacesArray().add(i, tile);
+            } else {
+                // Add tile back to tray and stop extending permutation with this letter
+                tray.getSpacesArray().add(i, tile);
+                // Remove new tile from permutation
+                permutation.getSpacesArray().removeFirst();
+            }
+        }
+    }
+
+    private static void permuteRight (
+            Trie dictionary, Board board, ArrayList<Word> possible,
+            Word permutation, Tray tray, int anchorRow, int currCol) {
+
+        // Stop searching left if at bounds of board or tray
+        if (currCol >= board.BOARD_SIZE || tray.isEmpty()) return;
+
+        // If Board has a tile at this location we have to account for that
+        if (board.getSpaceAtCoordinates(anchorRow, currCol).containsLetter()) {
+            // Grab tile at these coordinates
+            Tile newTile = new Tile(board.getSpaceAtCoordinates(anchorRow, currCol));
+            // Add to Back of permutation
+            permutation.addSpaceToEnd(newTile);
+            // Check if sequence is in trie
+            Word newWord = new Word(permutation);
+
+            if (dictionary.containsSequence(newWord.toString())) {
+                // Add possible word
+                possible.add(newWord);
+                // Continue incrementing right
+                currCol++;
+            } else {
+                // Remove new tile from permutation
+                permutation.getSpacesArray().removeFirst();
+                return;
+            }
+        }
+
+        // Iterate through tray
+        for (int i = 0; i < tray.size(); i++) {
+            // Take tile at index i out of tray
+            Tile tile = tray.getSpacesArray().remove(i);
+            // Add this tile to end of permutation word
+            permutation.addSpaceToEnd(new Tile(tile.getContents(), anchorRow, currCol));
+            // Check if this sequence is in trie
+            Word newWord = new Word(permutation);
+
+            if (dictionary.containsSequence(newWord.toString())) {
+                // Add to possible words
+                possible.add(newWord);
+                // Continue permutation
+                permuteRight(dictionary, board, possible, new Word(newWord), tray, anchorRow, currCol+1);
+                // Add back to tray
+                tray.getSpacesArray().add(i, tile);
+            } else {
+                // Add tile back to tray and stop extending permutation with this letter
+                tray.getSpacesArray().add(i, tile);
+                // Remove new tile from permutation
+                permutation.getSpacesArray().removeLast();
+            }
+        }
+    }
+
+
+    /**
+     * Prune away illegal moves and find the highest scorer among the legal moves
+     * @param possibleWords Possible words to check
+     * @return Highest scoring word
+     */
+    public static Word findHighestScorerFromPossibleMoves(ArrayList<Word> possibleWords) {
         return null;
     }
 
