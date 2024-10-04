@@ -28,11 +28,6 @@ public class Tray extends Word {
     Gut some functionality that wouldn't properly work
      */
     @Override
-    public void insertIfAbsAbsent(Tile tile) {
-        System.out.println("Cannot use method @insertIfAbsAbsent on object @Tray.");
-    }
-
-    @Override
     public boolean absContains(Tile tile) {
         System.out.println("Cannot use method @absContains on object @Tray.");
         return false;

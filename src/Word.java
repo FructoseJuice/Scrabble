@@ -39,9 +39,19 @@ public class Word {
         return word;
     }
 
-    public void insertIfAbsAbsent(Tile tile) {
-        if (!absContains(tile)) {
-            addSpace(tile);
+    public void reverse() {
+        int start = 0;
+        int end = word.size() - 1;
+
+        while (start < end) {
+            // Swap the elements at start and end indices
+            Tile temp = word.get(start);
+            word.set(start, word.get(end));
+            word.set(end, temp);
+
+            // Move the pointers towards the center
+            start++;
+            end--;
         }
     }
 
