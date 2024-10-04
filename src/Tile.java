@@ -10,8 +10,8 @@
 public class Tile {
     private String contents;
 
-    private final int row;
-    private final int col;
+    private int row;
+    private int col;
 
     /**
      * Creates a new space with the specified contents and coordinates
@@ -35,6 +35,12 @@ public class Tile {
 
     public int getRow() {
         return row;
+    }
+
+    public void transpose() {
+        int temp = col;
+        col = row;
+        row = temp;
     }
 
     public String getContents() {

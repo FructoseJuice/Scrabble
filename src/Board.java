@@ -47,6 +47,12 @@ public class Board {
         }
     }
 
+    public Board(int size, Tile[][] board) {
+        this.board = board;
+        BOARD_SIZE = size;
+        multiplierBoard = null;
+    }
+
     /**
      * Find all the words on this board in the specified direction
      *
@@ -202,6 +208,22 @@ public class Board {
      */
     public Multiplier getMultiplierAtCoordinates(int row, int col) {
         return multiplierBoard[row][col];
+    }
+
+
+    public Board transpose() {
+        Tile[][] transposedBoard = new Tile[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                // Copy transposed values
+                Tile tile = new Tile(board[i][j]);
+                tile.transpose();
+                transposedBoard[j][i] = tile;
+            }
+        }
+
+        return new Board(BOARD_SIZE, transposedBoard);
     }
 
 

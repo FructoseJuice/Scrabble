@@ -20,12 +20,30 @@ public class Solver extends EntryPoint {
             System.out.println(boardAndTray.getFst().toString());
             System.out.println(boardAndTray.getSnd().toString());
 
-            //Generate anchor spaces
+            // Generate anchor spaces
             ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = generateAnchors(boardAndTray.getFst());
-            //Transpose board and generate more anchors
 
-            //Generate possible moves from anchor spaces
+            // Generate possible moves from anchor spaces
             ArrayList<Word> possibleWords = generatePossibleMoves(dictionary, boardAndTray.getFst(), boardAndTray.getSnd(), anchorSpaces);
+
+            // Transpose board and repeat process
+            Board transposedBoard = boardAndTray.getFst().transpose();
+
+            anchorSpaces = generateAnchors(transposedBoard);
+
+            ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
+
+            //Transpose legal words
+            possibleVerticalWords = pruneIllegalWords(dictionary, possibleVerticalWords);
+
+            for (Word word : possibleVerticalWords) {
+                for (Tile tile : word.getSpacesArray()) {
+                    tile.transpose();
+                }
+            }
+
+            // Merge all words
+            possibleWords.addAll(possibleVerticalWords);
             System.out.println();
             //Prune illegal moves and find the highest scorer
             //Use Max heap for this
@@ -92,28 +110,88 @@ public class Solver extends EntryPoint {
     /**
      * Finds all "anchors" on the board. An anchor is an empty space immediately to the left
      * or right of a letter.
-     * @param originalBoard Board to check
+     * @param board Board to check
      * @return All anchors
      */
-    public static ArrayList<Pair<Pair<Tile, Word>, Side>> generateAnchors(Board originalBoard) {
+    public static ArrayList<Pair<Pair<Tile, Word>, Side>> generateAnchors(Board board) {
         ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = new ArrayList<>();
 
         // Traverse board for anchors
         int k;
-        for (int i = 0; i < originalBoard.BOARD_SIZE; i++) {
-            for (int j = 0; j < originalBoard.BOARD_SIZE - 1; j++) {
-                k = j;
+        boolean leftEmpty;
+        boolean rightEmpty;
+        boolean aboveEmpty;
+        boolean belowEmpty;
+        for (int row = 0; row < board.BOARD_SIZE; row++) {
+            for (int col = 0; col < board.BOARD_SIZE; col++) {
+                k = col;
+
+                // If this space is not empty this cannot be an anchor
+                if (board.getSpaceAtCoordinates(row, col).containsLetter()) continue;
+
+                // Check if left empty
+                if (col > 0) {
+                    leftEmpty = board.getSpaceAtCoordinates(row, col-1).isBlank();
+                } else {
+                    leftEmpty = true;
+                }
+
+                // Check if right empty
+                if (col < board.BOARD_SIZE - 1) {
+                    rightEmpty = board.getSpaceAtCoordinates(row, col+1).isBlank();
+                } else {
+                    rightEmpty = true;
+                }
+
+                // Spaces to left and right must be empty
+                if (leftEmpty && rightEmpty) {
+                    // Check For letter above this space
+                    if (row - 1 >= 0) {
+                        aboveEmpty = board.getSpaceAtCoordinates(row-1, col).isBlank();
+                    } else {
+                        aboveEmpty = true;
+                    }
+
+                    // Check space below for letter
+                    if (row + 1 < board.BOARD_SIZE) {
+                        belowEmpty = board.getSpaceAtCoordinates(row + 1, col).isBlank();
+                    } else {
+                        belowEmpty = true;
+                    }
+
+                    // If space above contains a letter, this is an achor
+                    if (!aboveEmpty) {
+                        Pair<Tile, Word> newAnchor = new Pair<>();
+                        newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
+                        newAnchor.setSnd(new Word());
+
+                        anchorSpaces.add(new Pair<>(newAnchor, Side.LEFT));
+
+                        continue;
+                    }
+
+                    // If this space is empty and space below contains a letter, this is an anchor
+                    if (!belowEmpty) {
+                        Pair<Tile, Word> newAnchor = new Pair<>();
+                        newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
+                        newAnchor.setSnd(new Word());
+
+                        anchorSpaces.add(new Pair<>(newAnchor, Side.LEFT));
+
+                        continue;
+                    }
+                }
 
                 // If this space is empty and space ahead contains a letter, this is a left anchor
-                if (originalBoard.getSpaceAtCoordinates(i, j).isBlank() && originalBoard.getSpaceAtCoordinates(i, j+1).containsLetter()) {
+                if (!rightEmpty) {
                     Pair<Tile, Word> newAnchor = new Pair<>();
-                    newAnchor.setFst(originalBoard.getSpaceAtCoordinates(i, j));
+                    newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
 
                     Word anchorWord = new Word();
 
                     // Iterate through word to our right
-                    while (originalBoard.getSpaceAtCoordinates(i, j+1).containsLetter()) {
-                        anchorWord.addSpace(originalBoard.getSpaceAtCoordinates(i, ++j));
+                    while (col+1 < board.BOARD_SIZE && board.getSpaceAtCoordinates(row, col+1).containsLetter()) {
+                        anchorWord.addSpace(board.getSpaceAtCoordinates(row, ++col));
                     }
                     newAnchor.setSnd(anchorWord);
 
@@ -121,16 +199,16 @@ public class Solver extends EntryPoint {
                 }
 
                 // If this space is empty and space before contains a letter, this is a right side anchor
-                if (k > 0 && originalBoard.getSpaceAtCoordinates(i, k).isBlank() && originalBoard.getSpaceAtCoordinates(i, k-1).containsLetter()) {
+                if (!leftEmpty) {
                     // Collect this word
                     Pair<Tile, Word> newAnchor = new Pair<>();
-                    newAnchor.setFst(originalBoard.getSpaceAtCoordinates(i, k));
+                    newAnchor.setFst(board.getSpaceAtCoordinates(row, k));
 
                     Word anchorWord = new Word();
 
                     // Iterate through word to our left
-                    while (k > 0 && originalBoard.getSpaceAtCoordinates(i, --k).containsLetter()) {
-                        anchorWord.addSpace(originalBoard.getSpaceAtCoordinates(i, k));
+                    while (k > 0 && board.getSpaceAtCoordinates(row, --k).containsLetter()) {
+                        anchorWord.addSpace(board.getSpaceAtCoordinates(row, k));
                     }
 
                     // Reverse this word first
@@ -164,6 +242,7 @@ public class Solver extends EntryPoint {
         If Trie has sequence t + anchor.word
             i--
             proc()
+            rightSearchProc()
          */
         ArrayList<Word> moves = new ArrayList<>();
 
@@ -177,6 +256,9 @@ public class Solver extends EntryPoint {
             anchorRow = anchor.getFst().getFst().getRow();
 
             if (anchor.getSnd() == Side.LEFT) {
+                if (anchor.equals(anchors.getLast())) {
+                    System.out.println();
+                }
                 permuteLeft(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
             } else {
                 permuteRight(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
@@ -184,7 +266,7 @@ public class Solver extends EntryPoint {
         }
 
         // Prune away illegal moves
-        moves = pruneIllegalWords(dictionary, moves);
+        //moves = pruneIllegalWords(dictionary, moves);
 
 
         return moves;
@@ -207,14 +289,14 @@ public class Solver extends EntryPoint {
             // Check if the sequence is in trie
             Word newWord = new Word(permutation);
 
-            if (dictionary.containsSequence(newWord.toString())) {
+            if (dictionary.containsWord(newWord.toString())) {
                 // Add possible word
                 possible.add(newWord);
-                // Continue decrementing left
-                permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
-                // Also try extending word to the right
-                permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
             }
+            // Continue decrementing left
+            permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+            // Also try extending word to the right
+            permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
             // Remove new tile from permutation
             permutation.getSpacesArray().removeFirst();
             return;
@@ -229,17 +311,17 @@ public class Solver extends EntryPoint {
 
             // Check if this sequence is in trie
             Word newWord = new Word(permutation);
-            if (dictionary.containsSequence(newWord.toString())) {
+            if (dictionary.containsWord(newWord.toString())) {
                 // If this word is already in the possible words we've checked those permutations
                 if (!wordListAbsContains(possible, newWord)) {
                     // Add to possible words
                     possible.add(newWord);
-                    // Continue permutation
-                    permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
-                    // Also search for right permutations to try and extend this word
-                    permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
                 }
             }
+            // Continue permutation
+            permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+            // Also search for right permutations to try and extend this word
+            permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
 
             // Add tile back to tray
             tray.getSpacesArray().add(i, tile);
@@ -266,12 +348,12 @@ public class Solver extends EntryPoint {
 
             // Check if the sequence is in trie
             Word newWord = new Word(permutation);
-            if (dictionary.containsSequence(newWord.toString())) {
+            if (dictionary.containsWord(newWord.toString())) {
                 // Add possible word
                 possible.add(newWord);
-                // Continue incrementing right
-                permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol + 1);
             }
+            // Continue incrementing right
+            permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol + 1);
             // Remove new tile from permutation
             permutation.getSpacesArray().removeLast();
             return;
@@ -286,15 +368,15 @@ public class Solver extends EntryPoint {
 
             // Check if this sequence is in trie
             Word newWord = new Word(permutation);
-            if (dictionary.containsSequence(newWord.toString())) {
+            if (dictionary.containsWord(newWord.toString())) {
                 // If this word is already in the possible words we've checked those permutations
                 if (!wordListAbsContains(possible, newWord)) {
                     // Add to possible words
                     possible.add(newWord);
-                    // Continue permutation
-                    permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol + 1);
                 }
             }
+            // Continue permutation
+            permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol + 1);
             // Add tile back to tray
             tray.getSpacesArray().add(i, tile);
             // Remove new tile from permutation
