@@ -2,7 +2,10 @@ import Trie.Trie;
 import utils.Pair;
 import utils.Side;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 
 public class Solver extends EntryPoint {
@@ -12,19 +15,75 @@ public class Solver extends EntryPoint {
 
         Board originalBoard;
         while (true) {
-            Pair<Board, Board> newBoards = readNumBoardsFromCli(1);
+            Pair<Board, Tray> boardAndTray = readBoardAndTrayFromCLI();
 
-            if (newBoards == null) break;
+            if (boardAndTray == null) break;
 
-            originalBoard = newBoards.getFst();
+            originalBoard = boardAndTray.getFst();
 
             System.out.println(originalBoard.toString());
 
-            generateHorizontalWords(originalBoard);
+            generateHorizontalWords(originalBoard, boardAndTray.getSnd());
         }
     }
 
-    public static ArrayList<Word> generateHorizontalWords(Board originalBoard) {
+    /**
+     * Initializes new board and Tray from Cli
+     * @return New Pair of a board and tray
+     */
+    public static Pair<Board, Tray> readBoardAndTrayFromCLI() throws IOException {
+        //Boards to return
+        Pair<Board, Tray> newBoardAndTray = new Pair<>();
+        StringBuilder boardContents = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        //Read in size of board, should be first line of input
+        int boardSize;
+
+        System.out.println("Enter boards and tray in this format for each: \n{board size}\n{board}\n{tray}");
+
+        String line = reader.readLine();
+
+        //Try till not null
+        if (line == null) {
+            int tries = 0;
+            while (tries < 3 && (line = reader.readLine()) == null) {
+                tries++;
+            }
+        }
+
+        if (line == null) return null;
+
+        //If blank try to read next line
+        if (line.isEmpty()) {
+            line = reader.readLine();
+        }
+
+        boardSize = Integer.parseInt(line.trim());
+
+        //Read each row
+        for (int i = 0; i < boardSize; i++) {
+            boardContents.append(reader.readLine()).append("\n");
+        }
+
+        //Initialize new board
+        newBoardAndTray.setFst(new Board(boardSize, boardContents.toString()));
+
+        //Read and process tray
+        Tray newTray = new Tray();
+
+        line = reader.readLine();
+        for (String letter : line.split("")) {
+            newTray.addSpace(new Tile(letter, -1, -1));
+        }
+
+        newBoardAndTray.setSnd(newTray);
+
+
+        return newBoardAndTray;
+    }
+
+    public static ArrayList<Word> generateHorizontalWords(Board originalBoard, Tray tray) {
         ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = new ArrayList<>();
 
         // Traverse board for anchors
