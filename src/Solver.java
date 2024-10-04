@@ -165,7 +165,7 @@ public class Solver extends EntryPoint {
             i--
             proc()
          */
-        ArrayList<Word> possibleWords = new ArrayList<>();
+        ArrayList<Word> moves = new ArrayList<>();
 
         int anchorCol;
         int anchorRow;
@@ -177,16 +177,17 @@ public class Solver extends EntryPoint {
             anchorRow = anchor.getFst().getFst().getRow();
 
             if (anchor.getSnd() == Side.LEFT) {
-                permuteLeft(dictionary, originalBoard, possibleWords, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
+                permuteLeft(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
             } else {
-                //permuteRight(dictionary, originalBoard, possibleWords, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
+                permuteRight(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
             }
         }
 
-        // Remove any duplicates
+        // Prune away illegal moves
+        moves = pruneIllegalWords(dictionary, moves);
 
 
-        return possibleWords;
+        return moves;
     }
 
 
@@ -230,7 +231,7 @@ public class Solver extends EntryPoint {
             Word newWord = new Word(permutation);
             if (dictionary.containsSequence(newWord.toString())) {
                 // If this word is already in the possible words we've checked those permutations
-                if (!wordListContains(possible, newWord)) {
+                if (!wordListAbsContains(possible, newWord)) {
                     // Add to possible words
                     possible.add(newWord);
                     // Continue permutation
@@ -287,7 +288,7 @@ public class Solver extends EntryPoint {
             Word newWord = new Word(permutation);
             if (dictionary.containsSequence(newWord.toString())) {
                 // If this word is already in the possible words we've checked those permutations
-                if (!wordListContains(possible, newWord)) {
+                if (!wordListAbsContains(possible, newWord)) {
                     // Add to possible words
                     possible.add(newWord);
                     // Continue permutation
@@ -301,7 +302,7 @@ public class Solver extends EntryPoint {
         }
     }
 
-    public static boolean wordListContains(ArrayList<Word> wordList, Word word) {
+    public static boolean wordListAbsContains(ArrayList<Word> wordList, Word word) {
         boolean differenceFound;
         for (Word seenWord : wordList) {
             if (seenWord.size() != word.size()) continue;
@@ -323,6 +324,19 @@ public class Solver extends EntryPoint {
         }
 
         return false;
+    }
+
+
+    public static ArrayList<Word> pruneIllegalWords(Trie dictionary, ArrayList<Word> possibleWords) {
+        ArrayList<Word> legalWords = new ArrayList<>();
+
+        for (Word possible : possibleWords) {
+            if (dictionary.containsWord(possible.toString())) {
+                legalWords.add(possible);
+            }
+        }
+
+        return legalWords;
     }
 
 
