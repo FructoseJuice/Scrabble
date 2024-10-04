@@ -73,61 +73,6 @@ public class EntryPoint {
 
 
     /**
-     * Initializes N boards from cli.
-     * @param num N number of boards to process
-     * @return New N number of boards
-     */
-    public static Pair<Board, Board> readNumBoardsFromCli(int num) throws IOException {
-        //Boards to return
-        Pair<Board, Board> newBoards = new Pair<>();
-        StringBuilder boardContents = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
-        //Read in size of board, should be first line of input
-        int boardSize;
-
-        System.out.println("Enter original and result boards in this format for each: \n{board size}\n{board}");
-        for (int n = 0; n < num; n++) {
-            String line = reader.readLine();
-
-            //Try till not null
-            if (line == null) {
-                int tries = 0;
-                while (tries < 3 && (line = reader.readLine()) == null) {
-                    tries++;
-                }
-            }
-
-            if (line == null) return null;
-
-            //If blank try to read next line
-            if (line.isEmpty()) {
-                line = reader.readLine();
-            }
-
-            boardSize = Integer.parseInt(line.trim());
-
-            //Read each row
-            for (int i = 0; i < boardSize; i++) {
-                boardContents.append(reader.readLine()).append("\n");
-            }
-
-            //Initialize new board
-            if (n == 0) {
-                newBoards.setFst(new Board(boardSize, boardContents.toString()));
-            } else {
-                newBoards.setSnd(new Board(boardSize, boardContents.toString()));
-            }
-
-            //Clear board contents
-            boardContents.setLength(0);
-        }
-
-        return newBoards;
-    }
-
-
-    /**
      * Checks if two boards are compatible, between the originalBoard and the resultBoard.
      * For two boards to be compatible, these conditions must be met:
      * Both boards must have matching multipliers
