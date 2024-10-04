@@ -211,6 +211,8 @@ public class Solver extends EntryPoint {
                 possible.add(newWord);
                 // Continue decrementing left
                 permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+                // Also try extending word to the right
+                permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
             }
             // Remove new tile from permutation
             permutation.getSpacesArray().removeFirst();
@@ -232,7 +234,9 @@ public class Solver extends EntryPoint {
                     // Add to possible words
                     possible.add(newWord);
                     // Continue permutation
-                    permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+                    permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+                    // Also search for right permutations to try and extend this word
+                    permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
                 }
             }
 
