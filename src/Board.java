@@ -47,10 +47,10 @@ public class Board {
         }
     }
 
-    public Board(int size, Tile[][] board) {
+    public Board(int size, Tile[][] board, Multiplier[][] multiplierBoard) {
         this.board = board;
         BOARD_SIZE = size;
-        multiplierBoard = null;
+        this.multiplierBoard = multiplierBoard;
     }
 
     /**
@@ -199,8 +199,12 @@ public class Board {
      * @param col column
      * @return Space at coordinates (row, column)
      */
-    public Tile getSpaceAtCoordinates(int row, int col) {
+    public Tile getTileAtCoordinates(int row, int col) {
         return board[row][col];
+    }
+
+    public void setTileOnBoard(Tile tile) {
+        board[tile.getRow()][tile.getCol()] = tile;
     }
 
     /**
@@ -208,6 +212,30 @@ public class Board {
      */
     public Multiplier getMultiplierAtCoordinates(int row, int col) {
         return multiplierBoard[row][col];
+    }
+
+
+    public Word temporarilyAddWord(Word wordToAdd) {
+        Word replacedWord = new Word();
+
+        // Add word and collect replace spaces
+        int row;
+        int col;
+        for (Tile tile : wordToAdd.getSpacesArray()) {
+            row = tile.getRow();
+            col = tile.getCol();
+
+            replacedWord.addSpace(getTileAtCoordinates(row, col));
+            setTileOnBoard(tile);
+        }
+
+        return replacedWord;
+    }
+
+    public void setWordOnBoard(Word wordToAdd) {
+        for (Tile tile : wordToAdd.getSpacesArray()) {
+            setTileOnBoard(tile);
+        }
     }
 
 
@@ -223,7 +251,25 @@ public class Board {
             }
         }
 
-        return new Board(BOARD_SIZE, transposedBoard);
+        return new Board(BOARD_SIZE, transposedBoard, null);
+    }
+
+    public Board copyOf() {
+        Tile[][] copy = new Tile[BOARD_SIZE][BOARD_SIZE];
+        Multiplier[][] multipliers = new Multiplier[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                // Copy Tiles
+                Tile tile = new Tile(board[i][j]);
+                copy[i][j] = tile;
+                // Copy multipliers
+                Multiplier multiplier = new Multiplier(multiplierBoard[i][j]);
+                multipliers[i][j] = multiplier;
+            }
+        }
+
+        return new Board(BOARD_SIZE, copy, multipliers);
     }
 
 

@@ -34,9 +34,10 @@ public class Solver extends EntryPoint {
             ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
 
             //Transpose legal words
-            possibleVerticalWords = pruneIllegalWords(dictionary, possibleVerticalWords);
-
             for (Word word : possibleVerticalWords) {
+                if ("troolie".equals(word.toString())) {
+                    System.out.println();
+                }
                 for (Tile tile : word.getSpacesArray()) {
                     tile.transpose();
                 }
@@ -44,10 +45,9 @@ public class Solver extends EntryPoint {
 
             // Merge all words
             possibleWords.addAll(possibleVerticalWords);
-            System.out.println();
-            //Prune illegal moves and find the highest scorer
-            //Use Max heap for this
 
+            // Find the highest scorer HANDLE O POSSIBLE WORDS
+            Word highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
         }
     }
 
@@ -127,18 +127,18 @@ public class Solver extends EntryPoint {
                 k = col;
 
                 // If this space is not empty this cannot be an anchor
-                if (board.getSpaceAtCoordinates(row, col).containsLetter()) continue;
+                if (board.getTileAtCoordinates(row, col).containsLetter()) continue;
 
                 // Check if left empty
                 if (col > 0) {
-                    leftEmpty = board.getSpaceAtCoordinates(row, col-1).isBlank();
+                    leftEmpty = board.getTileAtCoordinates(row, col-1).isBlank();
                 } else {
                     leftEmpty = true;
                 }
 
                 // Check if right empty
                 if (col < board.BOARD_SIZE - 1) {
-                    rightEmpty = board.getSpaceAtCoordinates(row, col+1).isBlank();
+                    rightEmpty = board.getTileAtCoordinates(row, col+1).isBlank();
                 } else {
                     rightEmpty = true;
                 }
@@ -147,14 +147,14 @@ public class Solver extends EntryPoint {
                 if (leftEmpty && rightEmpty) {
                     // Check For letter above this space
                     if (row - 1 >= 0) {
-                        aboveEmpty = board.getSpaceAtCoordinates(row-1, col).isBlank();
+                        aboveEmpty = board.getTileAtCoordinates(row-1, col).isBlank();
                     } else {
                         aboveEmpty = true;
                     }
 
                     // Check space below for letter
                     if (row + 1 < board.BOARD_SIZE) {
-                        belowEmpty = board.getSpaceAtCoordinates(row + 1, col).isBlank();
+                        belowEmpty = board.getTileAtCoordinates(row + 1, col).isBlank();
                     } else {
                         belowEmpty = true;
                     }
@@ -162,7 +162,7 @@ public class Solver extends EntryPoint {
                     // If space above contains a letter, this is an achor
                     if (!aboveEmpty) {
                         Pair<Tile, Word> newAnchor = new Pair<>();
-                        newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
+                        newAnchor.setFst(board.getTileAtCoordinates(row, col));
                         newAnchor.setSnd(new Word());
 
                         anchorSpaces.add(new Pair<>(newAnchor, Side.LEFT));
@@ -173,7 +173,7 @@ public class Solver extends EntryPoint {
                     // If this space is empty and space below contains a letter, this is an anchor
                     if (!belowEmpty) {
                         Pair<Tile, Word> newAnchor = new Pair<>();
-                        newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
+                        newAnchor.setFst(board.getTileAtCoordinates(row, col));
                         newAnchor.setSnd(new Word());
 
                         anchorSpaces.add(new Pair<>(newAnchor, Side.LEFT));
@@ -185,13 +185,13 @@ public class Solver extends EntryPoint {
                 // If this space is empty and space ahead contains a letter, this is a left anchor
                 if (!rightEmpty) {
                     Pair<Tile, Word> newAnchor = new Pair<>();
-                    newAnchor.setFst(board.getSpaceAtCoordinates(row, col));
+                    newAnchor.setFst(board.getTileAtCoordinates(row, col));
 
                     Word anchorWord = new Word();
 
                     // Iterate through word to our right
-                    while (col+1 < board.BOARD_SIZE && board.getSpaceAtCoordinates(row, col+1).containsLetter()) {
-                        anchorWord.addSpace(board.getSpaceAtCoordinates(row, ++col));
+                    while (col+1 < board.BOARD_SIZE && board.getTileAtCoordinates(row, col+1).containsLetter()) {
+                        anchorWord.addSpace(board.getTileAtCoordinates(row, ++col));
                     }
                     newAnchor.setSnd(anchorWord);
 
@@ -202,13 +202,13 @@ public class Solver extends EntryPoint {
                 if (!leftEmpty) {
                     // Collect this word
                     Pair<Tile, Word> newAnchor = new Pair<>();
-                    newAnchor.setFst(board.getSpaceAtCoordinates(row, k));
+                    newAnchor.setFst(board.getTileAtCoordinates(row, k));
 
                     Word anchorWord = new Word();
 
                     // Iterate through word to our left
-                    while (k > 0 && board.getSpaceAtCoordinates(row, --k).containsLetter()) {
-                        anchorWord.addSpace(board.getSpaceAtCoordinates(row, k));
+                    while (k > 0 && board.getTileAtCoordinates(row, --k).containsLetter()) {
+                        anchorWord.addSpace(board.getTileAtCoordinates(row, k));
                     }
 
                     // Reverse this word first
@@ -281,9 +281,9 @@ public class Solver extends EntryPoint {
         if (currCol < 0 || tray.isEmpty()) return;
 
         // Check if there's a tile at this location
-        if (board.getSpaceAtCoordinates(anchorRow, currCol).containsLetter()) {
+        if (board.getTileAtCoordinates(anchorRow, currCol).containsLetter()) {
             // Grab tile at these coordinates
-            Tile newTile = new Tile(board.getSpaceAtCoordinates(anchorRow, currCol));
+            Tile newTile = new Tile(board.getTileAtCoordinates(anchorRow, currCol));
             // Add to the front of permutation
             permutation.addSpaceToFront(newTile);
             // Check if the sequence is in trie
@@ -340,9 +340,9 @@ public class Solver extends EntryPoint {
 
 
         // Check if there's a tile at this location
-        if (board.getSpaceAtCoordinates(anchorRow, currCol).containsLetter()) {
+        if (board.getTileAtCoordinates(anchorRow, currCol).containsLetter()) {
             // Grab tile at these coordinates
-            Tile newTile = new Tile(board.getSpaceAtCoordinates(anchorRow, currCol));
+            Tile newTile = new Tile(board.getTileAtCoordinates(anchorRow, currCol));
             // Add to the back of permutation
             permutation.addSpaceToEnd(newTile);
 
@@ -409,25 +409,38 @@ public class Solver extends EntryPoint {
     }
 
 
-    public static ArrayList<Word> pruneIllegalWords(Trie dictionary, ArrayList<Word> possibleWords) {
-        ArrayList<Word> legalWords = new ArrayList<>();
-
-        for (Word possible : possibleWords) {
-            if (dictionary.containsWord(possible.toString())) {
-                legalWords.add(possible);
-            }
-        }
-
-        return legalWords;
-    }
-
-
     /**
      * Prune away illegal moves and find the highest scorer among the legal moves
      * @param possibleWords Possible words to check
      * @return Highest scoring word
      */
-    public static Word findHighestScorerFromPossibleMoves(ArrayList<Word> possibleWords) {
+    public static Word findHighestScorerFromPossibleMoves(Trie dictionary, Board originalBoard, ArrayList<Word> possibleWords) {
+        ArrayList<Word> legalWords = new ArrayList<>();
+        Board resultBoard = originalBoard.copyOf();
+
+        Word oldContents;
+        BoardCompatibilityCheckData checkData;
+        for (Word possibleWord : possibleWords) {
+            if ("troolie".equals(possibleWord.toString())) {
+                System.out.println();
+            }
+
+            oldContents = resultBoard.temporarilyAddWord(possibleWord);
+
+            // Check if legal
+            checkData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+
+            // Replace old contents
+            resultBoard.setWordOnBoard(oldContents);
+
+            // Check if move was legal
+            if (checkData.isLegal()) {
+                legalWords.add(possibleWord);
+            }
+        }
+
+        System.out.println();
+
         return null;
     }
 

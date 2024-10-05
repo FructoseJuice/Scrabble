@@ -21,6 +21,11 @@ public class Multiplier {
         this.type = type;
     }
 
+    public Multiplier(Multiplier other) {
+        this.value = other.value;
+        this.type = other.type;
+    }
+
     public Multiplier(String spaceContent) {
         if (spaceContent.contains("3")) {
             value = MultiplierValue.THREE;

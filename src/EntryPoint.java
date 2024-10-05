@@ -6,7 +6,6 @@
  */
 
 import Trie.Trie;
-import utils.Pair;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -95,15 +94,15 @@ public class EntryPoint {
         for (int i = 0; i < originalBoard.BOARD_SIZE; i++) {
             for (int j = 0; j < originalBoard.BOARD_SIZE; j++) {
                 //Check if these spaces are different
-                if (!originalBoard.getSpaceAtCoordinates(i, j).equals(resultBoard.getSpaceAtCoordinates(i, j))) {
+                if (!originalBoard.getTileAtCoordinates(i, j).equals(resultBoard.getTileAtCoordinates(i, j))) {
                     //If these are both blank this is a multiplier mismatch
-                    if (originalBoard.getSpaceAtCoordinates(i, j).isBlank() && resultBoard.getSpaceAtCoordinates(i, j).isBlank()) {
+                    if (originalBoard.getTileAtCoordinates(i, j).isBlank() && resultBoard.getTileAtCoordinates(i, j).isBlank()) {
                         return new BoardCompatibilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, -1);
                     } else {
                         //Record that a difference has been found
                         //Do not break, because we still want to look
                         //For multiplier mismatches
-                        newPlay.addSpace(resultBoard.getSpaceAtCoordinates(i, j));
+                        newPlay.addSpace(resultBoard.getTileAtCoordinates(i, j));
                     }
                 }
             }
@@ -151,7 +150,7 @@ public class EntryPoint {
         for (Word originalWord : originalWords) {
             for (Tile tile : originalWord.getSpacesArray()) {
                 //Check if this space is the same in the new board
-                if (!tile.equals(resultBoard.getSpaceAtCoordinates(tile.getRow(), tile.getCol()))) {
+                if (!tile.equals(resultBoard.getTileAtCoordinates(tile.getRow(), tile.getCol()))) {
                     //Word has been altered in illegal way
                     String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
                     out += String.format("Found at (%d, %d).\n%n", tile.getRow(), tile.getCol());
@@ -182,7 +181,7 @@ public class EntryPoint {
         if (originalWords.isEmpty() && resultWords.size() == 1) {
             //Check if the middle space is occupied
             int halfBoardSize = Math.floorDiv(originalBoard.BOARD_SIZE, 2);
-            if (resultBoard.getSpaceAtCoordinates(halfBoardSize, halfBoardSize).isBlank()) {
+            if (resultBoard.getTileAtCoordinates(halfBoardSize, halfBoardSize).isBlank()) {
                 return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
             }
         }
