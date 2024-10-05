@@ -1,3 +1,8 @@
+/**
+ * Brandon W. Hidalgo
+ * This is just a generic class to hold two different (usually) objects.
+ */
+
 package utils;
 
 public class Pair <T, V> {
@@ -11,6 +16,7 @@ public class Pair <T, V> {
 
     public Pair() {}
 
+
     public void setFst(T fst) {
         this.fst = fst;
     }
@@ -18,6 +24,7 @@ public class Pair <T, V> {
     public void setSnd(V snd) {
         this.snd = snd;
     }
+
 
     public T getFst() {
         return fst;

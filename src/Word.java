@@ -32,16 +32,20 @@ public class Word {
         word.add(tile);
     }
 
+    /**
+     * Adds a space to the front of this word
+     * @param tile Tile to add to front
+     */
     public void addSpaceToFront(Tile tile) {
         word.addFirst(tile);
     }
 
+    /**
+     * Adds a tile to the end of this word
+     * @param tile Tile to add to end
+     */
     public void addSpaceToEnd(Tile tile) {
         word.addLast(tile);
-    }
-
-    public void removeLetter(Tile letter) {
-        getSpacesArray().removeIf(myLetter -> myLetter.equals(letter));
     }
 
     /**
@@ -52,6 +56,9 @@ public class Word {
     }
 
 
+    /**
+     * Reverses this word
+     */
     public void reverse() {
         int start = 0;
         int end = word.size() - 1;
@@ -170,14 +177,18 @@ public class Word {
         return word.isEmpty();
     }
 
+    /**
+     * @return The length of this word
+     */
     public int size() {
         return word.size();
     }
 
-    public void mergeToEnd(Word other) {
-        word.addAll(new ArrayList<>(other.getSpacesArray()));
-    }
 
+    /**
+     * Returns a copy of this words array and Tiles contained
+     * @return A copy of this word
+     */
     public Word copyOf() {
         ArrayList<Tile> newWord = new ArrayList<>();
 

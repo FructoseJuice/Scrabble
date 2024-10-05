@@ -215,6 +215,12 @@ public class Board {
     }
 
 
+    /**
+     * Temporarily add a word to the board.
+     * Return the replaced tiles on the board.
+     * @param wordToAdd Word to add to board temporarily
+     * @return The tiles wordToAdd replaced
+     */
     public Word temporarilyAddWord(Word wordToAdd) {
         Word replacedWord = new Word();
 
@@ -232,6 +238,10 @@ public class Board {
         return replacedWord;
     }
 
+    /**
+     * Sets a word on the board, replacing the tiles that were contained there
+     * @param wordToAdd Word to set on board
+     */
     public void setWordOnBoard(Word wordToAdd) {
         for (Tile tile : wordToAdd.getSpacesArray()) {
             setTileOnBoard(tile);
@@ -239,6 +249,11 @@ public class Board {
     }
 
 
+    /**
+     * Creates a copy of this board and then returns the transposed copy.
+     * The multiplier list will just be set to null.
+     * @return A transposed copy of this board
+     */
     public Board transpose() {
         Tile[][] transposedBoard = new Tile[BOARD_SIZE][BOARD_SIZE];
 
@@ -254,6 +269,10 @@ public class Board {
         return new Board(BOARD_SIZE, transposedBoard, null);
     }
 
+    /**
+     * Returns a copy of this board and the tiles within.
+     * @return A copy of this board
+     */
     public Board copyOf() {
         Tile[][] copy = new Tile[BOARD_SIZE][BOARD_SIZE];
         Multiplier[][] multipliers = new Multiplier[BOARD_SIZE][BOARD_SIZE];
