@@ -26,17 +26,28 @@ public class Solver extends EntryPoint {
             // Generate possible moves from anchor spaces
             ArrayList<Word> possibleWords = generatePossibleMoves(dictionary, boardAndTray.getFst(), boardAndTray.getSnd(), anchorSpaces);
 
+
             // Transpose board and repeat process
             Board transposedBoard = boardAndTray.getFst().transpose();
 
+            //Generate anchor spaces for transposed board
             anchorSpaces = generateAnchors(transposedBoard);
 
+            // Find vertical words through transposed board
             ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
+
 
             //Transpose legal words and merge into running total list
             for (Word word : possibleVerticalWords) {
+                /*
+                 For some reason, tiles end up shared between words which
+                 causes major issues for transposing, so we have to make copies
+                 of all the found words. Would like to avoid this, but oh well.
+                 */
+
                 Word copy = word.copyOf();
 
+                // Transpose every tile in this word
                 for (Tile tile : copy.getSpacesArray()) {
                     tile.transpose();
                 }
@@ -47,6 +58,7 @@ public class Solver extends EntryPoint {
             // Find the highest scorer
             Pair<Word, BoardCompatibilityCheckData> highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
 
+            // Print info about the highest scoring move
             if (highestScorer == null) {
                 System.out.println("Found no moves!");
             } else {
@@ -258,6 +270,21 @@ public class Solver extends EntryPoint {
     }
 
 
+    /**
+     * For every single anchor space that we've found ->
+     * Find every permutation of the tray to the left of this anchor space.
+     * For every permutation to the left, try to extend the word to the right
+     * through the use of the permuteRight() function.
+     * For every permutation that provides us with a word contained within the dictionary,
+     * store that move in a "possible words list"
+     * @param dictionary Dictionary of known words
+     * @param board Input board
+     * @param possible Running list of possible words
+     * @param permutation Current permutation
+     * @param tray Current Tray
+     * @param anchorRow Row at which this anchor is on
+     * @param currCol Current column in recursion
+     */
     private static void permuteLeft(
             Trie dictionary, Board board, ArrayList<Word> possible,
             Word permutation, Tray tray, int anchorRow, int currCol) {
@@ -323,6 +350,18 @@ public class Solver extends EntryPoint {
     }
 
 
+    /**
+     * A little bit simpler than permuteLeft().
+     * Simply iterate to the right of the found anchor space
+     * and find all permutations of the current tray.
+     * @param dictionary Dictionary
+     * @param board Input Board
+     * @param possible Accumulator of possible moves
+     * @param permutation Current permutation of the tray and anchor word
+     * @param tray Current state of the tray
+     * @param anchorRow Tray at which this anchor is on
+     * @param currCol Current column in recursion
+     */
     private static void permuteRight(
             Trie dictionary, Board board, ArrayList<Word> possible,
             Word permutation, Tray tray, int anchorRow, int currCol) {
@@ -376,6 +415,15 @@ public class Solver extends EntryPoint {
         }
     }
 
+
+    /**
+     * Check if this wordsList Absolutely contains a word.
+     * This function will be checking each tile for both
+     * Loose equality between the contents, and Coordinate equality.
+     * @param wordList Word list to check
+     * @param word Word to check for
+     * @return If the words is Absolutely contained within the list
+     */
     public static boolean wordListAbsContains(ArrayList<Word> wordList, Word word) {
         boolean differenceFound;
         for (Word seenWord : wordList) {
@@ -460,64 +508,4 @@ public class Solver extends EntryPoint {
 
         return highestScoringMove;
     }
-
-    //Generate possible letters for each space
-    /*
-    Traverse Board
-    When find letter ->
-    Anchor space to left of letter
-    Store anchored word int W
-    Extend k to the left, k = min(board.length - current space, letters in tray)
-        Try every combination of letters at that space
-        Check if new letter L + W is within the Trie
-        If so, add to running list of possible words
-    For every new word, if it's a terminator add to possible words
-    Try to extend these words to the right
-
-
-
-
-    LeftPart(PartialWord, node N in dawg, l i m i t ) =
-        ExtendRight (PartialWord, N , Anchorsquare)
-        i f limit > 0 then
-            f o r each edge E out of N
-                i f the letter 1 labeling edge E is in our rack then
-
-                    remove a tile labeled 1 from the rack
-
-                    let N' be the node reached by following edge E
-
-                    Leftpart (PartialWord . 1 , N ' , limit -1)
-
-                    put the tile 1 back into the rack
-
-
-    ExtendRight (PartialWord , node N in dawg ,
-square) =
-I f N i s a terminal node then
-f o r each edge E out of N
-i f square is vacant then
-LegalMove (PartialWord)
-i f the letter 1 labeling edge E is
-1 is in the cross-check set of
-in our rack and
-square then
-remove a tile 1 from the rack
-let N' be the node reached by
-let next-square be the square t o
-ExtendRight (PartialWord - 1 , N',
-put the tile 1 back into the
-following edge E
-the right of square
-next-square )
-rack
-else
-let 1 be the letter occupying square
-if N has an edge labeled by 1 that
-leads t o some node N' then
-let next-square be the square t o
-the right of square
-ExtendRight (PartialWord . 1 , N',
-next-square )
-     */
 }
