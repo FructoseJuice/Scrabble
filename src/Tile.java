@@ -24,7 +24,7 @@ public class Tile {
     }
 
     public Tile(Tile other) {
-        this.contents = other.getContents();
+        this.contents = String.valueOf(other.getContents());
         this.row = other.getRow();
         this.col = other.getCol();
     }
@@ -113,6 +113,10 @@ public class Tile {
             case 'q', 'z' -> 10;
             default -> 0; //For wildcards
         };
+    }
+
+    public Tile copyOf() {
+        return new Tile(String.valueOf(contents), row, col);
     }
 
     @Override

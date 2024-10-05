@@ -178,6 +178,16 @@ public class Word {
         word.addAll(new ArrayList<>(other.getSpacesArray()));
     }
 
+    public Word copyOf() {
+        ArrayList<Tile> newWord = new ArrayList<>();
+
+        for (Tile tile : word) {
+            newWord.add(tile.copyOf());
+        }
+
+        return new Word(newWord);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

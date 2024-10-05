@@ -33,21 +33,26 @@ public class Solver extends EntryPoint {
 
             ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
 
-            //Transpose legal words
+            //Transpose legal words and merge into running total list
             for (Word word : possibleVerticalWords) {
-                if ("troolie".equals(word.toString())) {
-                    System.out.println();
-                }
-                for (Tile tile : word.getSpacesArray()) {
+                Word copy = word.copyOf();
+
+                for (Tile tile : copy.getSpacesArray()) {
                     tile.transpose();
                 }
+
+                possibleWords.add(copy);
             }
 
-            // Merge all words
-            possibleWords.addAll(possibleVerticalWords);
+            // Find the highest scorer
+            Pair<Word, BoardCompatibilityCheckData> highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
 
-            // Find the highest scorer HANDLE O POSSIBLE WORDS
-            Word highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
+            if (highestScorer == null) {
+                System.out.println("Found no moves!");
+            } else {
+                System.out.println("Solution:");
+                System.out.println(highestScorer.getSnd().output());
+            }
         }
     }
 
@@ -230,20 +235,6 @@ public class Solver extends EntryPoint {
      * @return Possible moves
      */
     public static ArrayList<Word> generatePossibleMoves(Trie dictionary, Board originalBoard, Tray tray, ArrayList<Pair<Pair<Tile, Word>, Side>> anchors) {
-        /*
-        For left words ->
-
-        if k = length tray
-        and j = anchor col
-        iterate from j-1 to j-k
-
-        proc:
-        at j-i, take tile t out of tray,
-        If Trie has sequence t + anchor.word
-            i--
-            proc()
-            rightSearchProc()
-         */
         ArrayList<Word> moves = new ArrayList<>();
 
         int anchorCol;
@@ -256,17 +247,11 @@ public class Solver extends EntryPoint {
             anchorRow = anchor.getFst().getFst().getRow();
 
             if (anchor.getSnd() == Side.LEFT) {
-                if (anchor.equals(anchors.getLast())) {
-                    System.out.println();
-                }
                 permuteLeft(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
             } else {
                 permuteRight(dictionary, originalBoard, moves, anchor.getFst().getSnd(), tray, anchorRow, anchorCol);
             }
         }
-
-        // Prune away illegal moves
-        //moves = pruneIllegalWords(dictionary, moves);
 
 
         return moves;
@@ -302,30 +287,37 @@ public class Solver extends EntryPoint {
             return;
         }
 
+
         // Iterate through tray
         for (int i = 0; i < tray.size(); i++) {
             // Take tile at index i out of tray
             Tile tile = tray.getSpacesArray().remove(i);
-            // Add this tile to the front of permutation word
-            permutation.addSpaceToFront(new Tile(tile.getContents(), anchorRow, currCol));
 
-            // Check if this sequence is in trie
+            // Add this tile to the front of permutation word
+            permutation.addSpaceToFront(new Tile(String.valueOf(tile.getContents()), anchorRow, currCol));
+
+            // Make new copy of permutation
             Word newWord = new Word(permutation);
+
+            // Check if this word is in the dictionary
             if (dictionary.containsWord(newWord.toString())) {
-                // If this word is already in the possible words we've checked those permutations
+                // Don't add if already in the possible word list
                 if (!wordListAbsContains(possible, newWord)) {
                     // Add to possible words
                     possible.add(newWord);
                 }
             }
-            // Continue permutation
+
+            // Continue permutation left
             permuteLeft(dictionary, board, possible, new Word(permutation), tray, anchorRow, currCol - 1);
+
             // Also search for right permutations to try and extend this word
             permuteRight(dictionary, board, possible, new Word(permutation), tray, anchorRow, permutation.getSpacesArray().getLast().getCol()+1);
 
+
             // Add tile back to tray
             tray.getSpacesArray().add(i, tile);
-            // Remove new tile from permutation
+            // Remove this tile from permutation
             permutation.getSpacesArray().removeFirst();
         }
     }
@@ -414,16 +406,17 @@ public class Solver extends EntryPoint {
      * @param possibleWords Possible words to check
      * @return Highest scoring word
      */
-    public static Word findHighestScorerFromPossibleMoves(Trie dictionary, Board originalBoard, ArrayList<Word> possibleWords) {
-        ArrayList<Word> legalWords = new ArrayList<>();
+    public static Pair<Word, BoardCompatibilityCheckData> findHighestScorerFromPossibleMoves(
+            Trie dictionary, Board originalBoard, ArrayList<Word> possibleWords) {
+
+        ArrayList<Pair<Word, BoardCompatibilityCheckData>> legalMoves = new ArrayList<>();
         Board resultBoard = originalBoard.copyOf();
 
         Word oldContents;
         BoardCompatibilityCheckData checkData;
+
+        // Find legal moves
         for (Word possibleWord : possibleWords) {
-            if ("troolie".equals(possibleWord.toString())) {
-                System.out.println();
-            }
 
             oldContents = resultBoard.temporarilyAddWord(possibleWord);
 
@@ -435,13 +428,37 @@ public class Solver extends EntryPoint {
 
             // Check if move was legal
             if (checkData.isLegal()) {
-                legalWords.add(possibleWord);
+                legalMoves.add(new Pair<>(possibleWord, checkData));
             }
         }
 
-        System.out.println();
+        // Find the highest scoring move
+        Pair<Word, BoardCompatibilityCheckData> highestScoringMove = null;
+        int highestScore = 0;
+        int score;
+        for (Pair<Word, BoardCompatibilityCheckData> move : legalMoves) {
+            score = scorePlay(originalBoard, move.getSnd().numNewTiles(), move.getSnd().newWords());
 
-        return null;
+            if (highestScore < score) {
+                highestScoringMove = move;
+                highestScore = score;
+            }
+        }
+
+        // Refine the output a bit
+        if (highestScoringMove != null) {
+            String output = highestScoringMove.getSnd().output();
+            output = output.split("\n")[0] + "\n";
+            output += "Word is: " + highestScoringMove.getFst().toString() + "\n";
+            output += "Score is: " + highestScore + "\n";
+            BoardCompatibilityCheckData newData =
+                    new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().numNewTiles());
+
+            return new Pair<>(highestScoringMove.getFst(), newData);
+        }
+
+
+        return highestScoringMove;
     }
 
     //Generate possible letters for each space
