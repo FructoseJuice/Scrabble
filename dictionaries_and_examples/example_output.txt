@@ -14,7 +14,7 @@ Input Board:
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
-Tray: le*mdoe
+utils.Tray: le*mdoe
 Solution lemoNed has 81 points
 Solution Board:
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
@@ -41,7 +41,7 @@ Input Board:
 .. ..  l  o .2 .. ..
 ..  m  a  t .. .3 ..
  r  e  S  i  d .. 3.
-Tray: toloeri
+utils.Tray: toloeri
 Solution troolie has 67 points
 Solution Board:
 3. .. .. 2. ..  t 3.
@@ -74,7 +74,7 @@ Input Board:
 .. ..  a  r  o  w .. .. .. 2. .. 2. .. .. .. .4 .. .. 2. .. ..
 .. 2. ..  o  x  y .. .. 2. .. .. .. 2. .. .. .. .3 .. .. 2. ..
  k  e  p  s ..  n .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
-Tray: ntnbtoi
+utils.Tray: ntnbtoi
 Solution tinpot has 24 points
 Solution Board:
 4. .. .. .2 .. .. .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
@@ -115,7 +115,7 @@ Input Board:
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
-Tray: dgos*ie
+utils.Tray: dgos*ie
 Solution Bodgiest has 83 points
 Solution Board:
 3. .. .. .2 .. .. ..  B .. .. .. .2 .. .. 3.

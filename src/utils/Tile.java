@@ -1,3 +1,5 @@
+package utils;
+
 /**
  * Brandon W. Hidalgo
  * This class describes a space on the scrabble board.

@@ -6,18 +6,21 @@
  */
 
 import Trie.Trie;
+import utils.BoardCompatibilityCheckData;
+import utils.Tile;
+import utils.Word;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class EntryPoint {
+public interface EntryPoint {
     /**
      * Parses the CLI to load the dictionary file and create a Trie from it
      * @param args System args
      * @return New dictionary Trie
      */
-    public static Trie parseClIForTrie(String[] args) {
+     static Trie parseClIForTrie(String[] args) {
         if (args.length == 0) {
             System.out.println("Expected dictionary file path.");
             System.exit(1);
@@ -33,7 +36,7 @@ public class EntryPoint {
      * @param dictionaryFilePath Path of dictionary
      * @return New trie built from the dictionary
      */
-    private static Trie initTrie(String dictionaryFilePath) {
+    static Trie initTrie(String dictionaryFilePath) {
         Trie trie = new Trie();
 
         InputStream inputStream;
@@ -86,7 +89,7 @@ public class EntryPoint {
      * @param resultBoard Original Board after a move has been made
      * @return Data describing how the compatibility check went
      */
-    public static BoardCompatibilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
+    static BoardCompatibilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
         //Find play
         Word newPlay = new Word();
 
@@ -151,7 +154,7 @@ public class EntryPoint {
             for (Tile tile : originalWord.getSpacesArray()) {
                 //Check if this space is the same in the new board
                 if (!tile.equals(resultBoard.getTileAtCoordinates(tile.getRow(), tile.getCol()))) {
-                    //Word has been altered in illegal way
+                    //utils.Word has been altered in illegal way
                     String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
                     out += String.format("Found at (%d, %d).\n%n", tile.getRow(), tile.getCol());
                     return new BoardCompatibilityCheckData(false, out, null, -1);
@@ -214,7 +217,7 @@ public class EntryPoint {
      * @param allWords All words on the board
      * @return If all the words are connected
      */
-    private static boolean allWordsAreConnected(ArrayList<Word> allWords) {
+     static boolean allWordsAreConnected(ArrayList<Word> allWords) {
         HashSet<Word> connectedWords = new HashSet<>();
 
         //Ensure all words are connected
@@ -257,7 +260,7 @@ public class EntryPoint {
      * @param newWords New words formed
      * @return Score value of this play
      */
-    public static int scorePlay(Board original, int numNewTiles, ArrayList<Word> newWords) {
+     static int scorePlay(Board original, int numNewTiles, ArrayList<Word> newWords) {
         //Score every new word
         int score = 0;
         for (Word word : newWords) {
@@ -276,11 +279,11 @@ public class EntryPoint {
 
     /**
      * Scores an individual word. Takes into account the word multiplier, and letter multipliers.
-     * @param word Word to score
+     * @param word utils.Word to score
      * @param board Board that contains the multipliers
      * @return Score value of this word
      */
-    private static int scoreWord(Word word, Board board) {
+     static int scoreWord(Word word, Board board) {
         int score = 0;
 
         ArrayList<Multiplier> wordMultipliers = new ArrayList<>();

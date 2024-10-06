@@ -1,3 +1,6 @@
+import utils.Tile;
+import utils.Word;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +64,7 @@ public class Board {
      * Luckily, I haven't had to mess with it.
      *
      * @param horizontalDir If this function should find words in the horizontal direction
-     * @return ArrayList<Word> all words found in that direction</Word>
+     * @return ArrayList<utils.Word> all words found in that direction</utils.Word>
      */
     private ArrayList<Word> findWordsInDirection(boolean horizontalDir) {
         ArrayList<Word> foundWords = new ArrayList<>();
@@ -218,7 +221,7 @@ public class Board {
     /**
      * Temporarily add a word to the board.
      * Return the replaced tiles on the board.
-     * @param wordToAdd Word to add to board temporarily
+     * @param wordToAdd utils.Word to add to board temporarily
      * @return The tiles wordToAdd replaced
      */
     public Word temporarilyAddWord(Word wordToAdd) {
@@ -240,7 +243,7 @@ public class Board {
 
     /**
      * Sets a word on the board, replacing the tiles that were contained there
-     * @param wordToAdd Word to set on board
+     * @param wordToAdd utils.Word to set on board
      */
     public void setWordOnBoard(Word wordToAdd) {
         for (Tile tile : wordToAdd.getSpacesArray()) {

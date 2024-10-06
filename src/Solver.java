@@ -1,6 +1,5 @@
 import Trie.Trie;
-import utils.Pair;
-import utils.Side;
+import utils.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,10 +7,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class Solver extends EntryPoint {
+public class Solver implements EntryPoint {
     public static void main(String[] args) throws IOException {
         //Load dictionary
-        Trie dictionary = parseClIForTrie(args);
+        Trie dictionary = EntryPoint.parseClIForTrie(args);
 
         while (true) {
             Pair<Board, Tray> boardAndTray = readBoardAndTrayFromCLI();
@@ -21,50 +20,8 @@ public class Solver extends EntryPoint {
             System.out.println(boardAndTray.getFst().toString());
             System.out.println(boardAndTray.getSnd().toString());
 
-            // Generate anchor spaces
-            ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = generateAnchors(boardAndTray.getFst());
-
-            // Generate possible moves from anchor spaces
-            ArrayList<Word> possibleWords = generatePossibleMoves(dictionary, boardAndTray.getFst(), boardAndTray.getSnd(), anchorSpaces);
-
-
-            // Transpose board and repeat process
-            Board transposedBoard = boardAndTray.getFst().transpose();
-
-            //Generate anchor spaces for transposed board
-            anchorSpaces = generateAnchors(transposedBoard);
-
-            // Find vertical words through transposed board
-            ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
-
-
-            //Transpose legal words and merge into running total list
-            //Convert words with blanks
-            for (Word word : possibleVerticalWords) {
-                /*
-                 For some reason, tiles end up shared between words which
-                 causes major issues for transposing, so we have to make copies
-                 of all the found words. Would like to avoid this, but oh well.
-                 */
-
-                Word copy = word.copyOf();
-
-                // Transpose every tile in this word
-                for (Tile tile : copy.getSpacesArray()) {
-                    tile.transpose();
-                }
-
-                // Add new transposed copy
-                possibleWords.add(copy);
-            }
-
-
-            // Convert word with blanks to actual words
-            // Use all legal combinations
-            deGenerifyWildCards(dictionary, possibleWords);
-
-            // Find the highest scorer
-            Pair<Word, BoardCompatibilityCheckData> highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
+            // Solve board and tray for highest scoring move
+            Pair<Word, BoardCompatibilityCheckData> highestScorer = solveBoardState(dictionary, boardAndTray);
 
             // Print info about the highest scoring move
             if (highestScorer == null) {
@@ -76,8 +33,10 @@ public class Solver extends EntryPoint {
         }
     }
 
+
+
     /**
-     * Initializes new board and Tray from Cli
+     * Initializes new board and utils.Tray from Cli
      * @return New Pair of a board and tray
      */
     public static Pair<Board, Tray> readBoardAndTrayFromCLI() throws IOException {
@@ -131,6 +90,55 @@ public class Solver extends EntryPoint {
 
         return newBoardAndTray;
     }
+
+
+    public static Pair<Word, BoardCompatibilityCheckData> solveBoardState(Trie dictionary, Pair<Board, Tray> boardAndTray) {
+        // Generate anchor spaces
+        ArrayList<Pair<Pair<Tile, Word>, Side>> anchorSpaces = generateAnchors(boardAndTray.getFst());
+
+        // Generate possible moves from anchor spaces
+        ArrayList<Word> possibleWords = generatePossibleMoves(dictionary, boardAndTray.getFst(), boardAndTray.getSnd(), anchorSpaces);
+
+
+        // Transpose board and repeat process
+        Board transposedBoard = boardAndTray.getFst().transpose();
+
+        //Generate anchor spaces for transposed board
+        anchorSpaces = generateAnchors(transposedBoard);
+
+        // Find vertical words through transposed board
+        ArrayList<Word> possibleVerticalWords = generatePossibleMoves(dictionary, transposedBoard, boardAndTray.getSnd(), anchorSpaces);
+
+
+        //Transpose legal words and merge into running total list
+        //Convert words with blanks
+        for (Word word : possibleVerticalWords) {
+                /*
+                 For some reason, tiles end up shared between words which
+                 causes major issues for transposing, so we have to make copies
+                 of all the found words. Would like to avoid this, but oh well.
+                 */
+
+            Word copy = word.copyOf();
+
+            // Transpose every tile in this word
+            for (Tile tile : copy.getSpacesArray()) {
+                tile.transpose();
+            }
+
+            // Add new transposed copy
+            possibleWords.add(copy);
+        }
+
+
+        // Convert word with blanks to actual words
+        // Use all legal combinations
+        deGenerifyWildCards(dictionary, possibleWords);
+
+        // Find and return the highest scorer
+        return findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
+    }
+
 
     /**
      * Finds all "anchors" on the board. An anchor is an empty space immediately to the left
@@ -289,7 +297,7 @@ public class Solver extends EntryPoint {
      * @param board Input board
      * @param possible Running list of possible words
      * @param permutation Current permutation
-     * @param tray Current Tray
+     * @param tray Current utils.Tray
      * @param anchorRow Row at which this anchor is on
      * @param currCol Current column in recursion
      */
@@ -367,7 +375,7 @@ public class Solver extends EntryPoint {
      * @param possible Accumulator of possible moves
      * @param permutation Current permutation of the tray and anchor word
      * @param tray Current state of the tray
-     * @param anchorRow Tray at which this anchor is on
+     * @param anchorRow utils.Tray at which this anchor is on
      * @param currCol Current column in recursion
      */
     private static void permuteRight(
@@ -428,8 +436,8 @@ public class Solver extends EntryPoint {
      * Check if this wordsList Absolutely contains a word.
      * This function will be checking each tile for both
      * Loose equality between the contents, and Coordinate equality.
-     * @param wordList Word list to check
-     * @param word Word to check for
+     * @param wordList utils.Word list to check
+     * @param word utils.Word to check for
      * @return If the words is Absolutely contained within the list
      */
     public static boolean wordListAbsContains(ArrayList<Word> wordList, Word word) {
@@ -471,7 +479,7 @@ public class Solver extends EntryPoint {
         char c;
         for (Word word : possibleWords) {
             for (int i = 0; i < word.size(); i++) {
-                // Check if Tile i is a wildcard
+                // Check if utils.Tile i is a wildcard
                 if (word.getSpaceAtIndex(i).getContents().contains("*")) {
                     wordsWithWildcards.add(word);
 
@@ -525,7 +533,7 @@ public class Solver extends EntryPoint {
             oldContents = resultBoard.temporarilyAddWord(possibleWord);
 
             // Check if legal
-            checkData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+            checkData = EntryPoint.areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
             // Replace old contents
             resultBoard.setWordOnBoard(oldContents);
@@ -541,7 +549,7 @@ public class Solver extends EntryPoint {
         int highestScore = 0;
         int score;
         for (Pair<Word, BoardCompatibilityCheckData> move : legalMoves) {
-            score = scorePlay(originalBoard, move.getSnd().numNewTiles(), move.getSnd().newWords());
+            score = EntryPoint.scorePlay(originalBoard, move.getSnd().numNewTiles(), move.getSnd().newWords());
 
             if (highestScore < score) {
                 highestScoringMove = move;
@@ -553,7 +561,7 @@ public class Solver extends EntryPoint {
         if (highestScoringMove != null) {
             String output = highestScoringMove.getSnd().output();
             output = output.split("\n")[0] + "\n";
-            output += "Word is: " + highestScoringMove.getFst().toString() + "\n";
+            output += "utils.Word is: " + highestScoringMove.getFst().toString() + "\n";
             output += "Score is: " + highestScore + "\n";
             BoardCompatibilityCheckData newData =
                     new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().numNewTiles());

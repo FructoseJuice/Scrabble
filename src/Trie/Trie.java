@@ -5,6 +5,8 @@ package Trie;
  * This class is a Trie. It provides O(n) time, where
  * n = length(word), to access every word in a dictionary.
  * Has functions to add words, and check for the existence of words.
+ *
+ * Trie adapted/stolen from "The World's Fastest Scrabble Program"
  */
 public class Trie {
     private final ConnectionTree rootConnectionTrees = new ConnectionTree('_');

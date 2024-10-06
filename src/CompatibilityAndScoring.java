@@ -1,12 +1,13 @@
 import Trie.Trie;
+import utils.BoardCompatibilityCheckData;
 import utils.Pair;
 
 import java.io.*;
 
-public class CompatibilityAndScoring extends EntryPoint{
+public class CompatibilityAndScoring implements EntryPoint {
     public static void main(String[] args) throws IOException {
         //Load dictionary
-        Trie dictionary = parseClIForTrie(args);
+        Trie dictionary = EntryPoint.parseClIForTrie(args);
 
         Board originalBoard;
         Board resultBoard;
@@ -22,10 +23,10 @@ public class CompatibilityAndScoring extends EntryPoint{
             System.out.println(originalBoard.toString());
             System.out.println(resultBoard.toString());
 
-            BoardCompatibilityCheckData compatibilityCheckData = areBoardsCompatible(dictionary, originalBoard, resultBoard);
+            BoardCompatibilityCheckData compatibilityCheckData = EntryPoint.areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
             if (compatibilityCheckData.isLegal()) {
-                int score = scorePlay(originalBoard, compatibilityCheckData.numNewTiles(), compatibilityCheckData.newWords());
+                int score = EntryPoint.scorePlay(originalBoard, compatibilityCheckData.numNewTiles(), compatibilityCheckData.newWords());
                 System.out.println(compatibilityCheckData.output());
                 System.out.println("Score: " + score);
             } else {
