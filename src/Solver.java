@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Solver extends EntryPoint {
     public static void main(String[] args) throws IOException {
@@ -38,6 +39,7 @@ public class Solver extends EntryPoint {
 
 
             //Transpose legal words and merge into running total list
+            //Convert words with blanks
             for (Word word : possibleVerticalWords) {
                 /*
                  For some reason, tiles end up shared between words which
@@ -54,6 +56,11 @@ public class Solver extends EntryPoint {
 
                 possibleWords.add(copy);
             }
+
+
+            // Convert word with blanks to actual words
+            // Use all legal combinations
+            deGenerifyWildCards(dictionary, possibleWords);
 
             // Find the highest scorer
             Pair<Word, BoardCompatibilityCheckData> highestScorer = findHighestScorerFromPossibleMoves(dictionary, boardAndTray.getFst(), possibleWords);
@@ -446,6 +453,47 @@ public class Solver extends EntryPoint {
         }
 
         return false;
+    }
+
+
+    public static void deGenerifyWildCards(Trie dictionary, ArrayList<Word> possibleWords) {
+        ArrayList<Word> newWords = new ArrayList<>();
+        HashSet<Word> wordsWithWildcards = new HashSet<>();
+
+        char c;
+        for (Word word : possibleWords) {
+            for (int i = 0; i < word.size(); i++) {
+                // Check if Tile i is a wildcard
+                if (word.getSpaceAtIndex(i).getContents().contains("*")) {
+                    wordsWithWildcards.add(word);
+
+                    for (int k = 0; k < 26; k++) {
+                        c = (char) (k + 'a');
+
+                        Word newWord = word.copyOf();
+
+                        newWord.getSpaceAtIndex(i).setContents(String.valueOf(Character.toUpperCase(c)));
+
+                        if (dictionary.containsWord(newWord.toString())) {
+                            newWords.add(newWord);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Try one more loop to catch any words with 2 wildcards
+        if (!newWords.isEmpty()) {
+            deGenerifyWildCards(dictionary, newWords);
+        }
+
+        // Prune away wildcard words
+        for (Word word : wordsWithWildcards) {
+            possibleWords.remove(word);
+        }
+
+        // Add all new moves
+        possibleWords.addAll(newWords);
     }
 
 

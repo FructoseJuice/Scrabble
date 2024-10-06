@@ -1,7 +1,5 @@
 package Trie;
 
-import java.util.HashMap;
-
 /**
  * Brandon W. Hidalgo
  * This class is a Trie. It provides O(n) time, where
@@ -61,7 +59,7 @@ public class Trie {
 
         // Check for leading blank
         if (word.charAt(0) == '*') {
-            return containsWordWithBlank(rootConnectionTrees, word);
+            return containsWordWithWildcard(rootConnectionTrees, word);
         }
 
         //Check to see if first character is at the root of the tree
@@ -75,7 +73,7 @@ public class Trie {
         for (int i = 1; i < word.length(); i++) {
             // Check for blank
             if (word.charAt(i) == '*') {
-                return containsWordWithBlank(connectionTree, word.substring(i));
+                return containsWordWithWildcard(connectionTree, word.substring(i));
             }
 
             connectionChar = word.charAt(i);
@@ -93,7 +91,7 @@ public class Trie {
         return connectionTree.isATerminatorNode();
     }
 
-    public boolean containsWordWithBlank(ConnectionTree parentTree, String subString) {
+    public boolean containsWordWithWildcard(ConnectionTree parentTree, String subString) {
         // For string s1 = "c0c1c2...ci*...c(n-2)c(n-1)cn"
         // subString = "*...c(n-2)c(n-1)cn
         // parentTree = ci.tree
