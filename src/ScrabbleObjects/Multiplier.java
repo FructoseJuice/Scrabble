@@ -1,5 +1,7 @@
+package ScrabbleObjects;
+
 /**
- * This class describes a Multiplier in scrabble
+ * This class describes a ScrabbleObjects.Multiplier in scrabble
  * It defines the type of multiplier it is, ScrabbleObjects.Word, or Letter,
  * and the value of it, One, Two, or Three.
  */

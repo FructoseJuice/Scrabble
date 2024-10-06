@@ -5,6 +5,7 @@
  * in order to properly function, and this provides to best way to share them.
  */
 
+import ScrabbleObjects.Multiplier;
 import utils.Trie.Trie;
 import utils.BoardCompatibilityCheckData;
 import ScrabbleObjects.Tile;
