@@ -91,12 +91,17 @@ public class Trie {
         return connectionTree.isATerminatorNode();
     }
 
+    /**
+     * Checks to see if a word with a wildcard is in the tree. At the spot of the wildcard
+     * try to follow every possible connection to see if there is a connection that leads to
+     * a terminator.
+     * @param parentTree Tree of letter before this wildcard
+     * @param subString "*...c(n-1)c(n-1)cn"
+     * @return If there is a path to a legal word from the wildcard
+     */
     public boolean containsWordWithWildcard(ConnectionTree parentTree, String subString) {
-        // For string s1 = "c0c1c2...ci*...c(n-2)c(n-1)cn"
-        // subString = "*...c(n-2)c(n-1)cn
-        // parentTree = ci.tree
-
         ConnectionTree tree;
+
         // Iterate through every possible character
         for (int letterIndex = 0; letterIndex < 26; letterIndex++) {
             char c = (char) (letterIndex + 'a');
@@ -125,28 +130,4 @@ public class Trie {
 
         return false;
     }
-
-    /*
-    lemoNed
-    lemo*ed
-
-    For blank tile {
-        If blank tile at index i in arr A
-        get all child connection trees, CA, of A[i-1]
-        if CA = {C1, C2, C3,..., Cn}
-        make new words for ->
-        A[0, i-1] + C1
-        A[0, i-1] + C2
-        A[0, i-1] + C3
-        ...
-        A[0, i-1] + Cn
-
-        For each new word {
-            EITHER
-                return letter
-            OR
-                Check if Cj is terminator
-        }
-    }
-     */
 }

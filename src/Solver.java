@@ -54,6 +54,7 @@ public class Solver extends EntryPoint {
                     tile.transpose();
                 }
 
+                // Add new transposed copy
                 possibleWords.add(copy);
             }
 
@@ -456,6 +457,13 @@ public class Solver extends EntryPoint {
     }
 
 
+    /**
+     * Takes a word with a wildcard and creates all possible permutations of it. If that
+     * permutation is contained within the dictionary, then add it to the possible words
+     * list.
+     * @param dictionary Dictionary to check new words against
+     * @param possibleWords All possible words
+     */
     public static void deGenerifyWildCards(Trie dictionary, ArrayList<Word> possibleWords) {
         ArrayList<Word> newWords = new ArrayList<>();
         HashSet<Word> wordsWithWildcards = new HashSet<>();
