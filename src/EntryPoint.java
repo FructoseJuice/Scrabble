@@ -5,10 +5,10 @@
  * in order to properly function, and this provides to best way to share them.
  */
 
-import Trie.Trie;
+import utils.Trie.Trie;
 import utils.BoardCompatibilityCheckData;
-import utils.Tile;
-import utils.Word;
+import ScrabbleObjects.Tile;
+import ScrabbleObjects.Word;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,9 +16,9 @@ import java.util.HashSet;
 
 public interface EntryPoint {
     /**
-     * Parses the CLI to load the dictionary file and create a Trie from it
+     * Parses the CLI to load the dictionary file and create a utils.Trie from it
      * @param args System args
-     * @return New dictionary Trie
+     * @return New dictionary utils.Trie
      */
      static Trie parseClIForTrie(String[] args) {
         if (args.length == 0) {
@@ -154,7 +154,7 @@ public interface EntryPoint {
             for (Tile tile : originalWord.getSpacesArray()) {
                 //Check if this space is the same in the new board
                 if (!tile.equals(resultBoard.getTileAtCoordinates(tile.getRow(), tile.getCol()))) {
-                    //utils.Word has been altered in illegal way
+                    //ScrabbleObjects.Word has been altered in illegal way
                     String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
                     out += String.format("Found at (%d, %d).\n%n", tile.getRow(), tile.getCol());
                     return new BoardCompatibilityCheckData(false, out, null, -1);
@@ -279,7 +279,7 @@ public interface EntryPoint {
 
     /**
      * Scores an individual word. Takes into account the word multiplier, and letter multipliers.
-     * @param word utils.Word to score
+     * @param word ScrabbleObjects.Word to score
      * @param board Board that contains the multipliers
      * @return Score value of this word
      */

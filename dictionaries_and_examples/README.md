@@ -2,7 +2,7 @@
 
 This directory contains some dictionaries, boards, and tiles distributions that you may find useful, as well as some example input/output files for the scorechecker and solver programs.
 
-## utils.Word lists
+## ScrabbleObjects.Word lists
 
 * `sowpods.txt`
   Big scrabble word list

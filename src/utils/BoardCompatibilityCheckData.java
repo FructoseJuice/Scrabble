@@ -1,5 +1,7 @@
 package utils;
 
+import ScrabbleObjects.Word;
+
 import java.util.ArrayList;
 
 /**

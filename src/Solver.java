@@ -1,4 +1,7 @@
-import Trie.Trie;
+import ScrabbleObjects.Tile;
+import ScrabbleObjects.Tray;
+import ScrabbleObjects.Word;
+import utils.Trie.Trie;
 import utils.*;
 
 import java.io.BufferedReader;
@@ -36,7 +39,7 @@ public class Solver implements EntryPoint {
 
 
     /**
-     * Initializes new board and utils.Tray from Cli
+     * Initializes new board and ScrabbleObjects.Tray from Cli
      * @return New Pair of a board and tray
      */
     public static Pair<Board, Tray> readBoardAndTrayFromCLI() throws IOException {
@@ -297,7 +300,7 @@ public class Solver implements EntryPoint {
      * @param board Input board
      * @param possible Running list of possible words
      * @param permutation Current permutation
-     * @param tray Current utils.Tray
+     * @param tray Current ScrabbleObjects.Tray
      * @param anchorRow Row at which this anchor is on
      * @param currCol Current column in recursion
      */
@@ -375,7 +378,7 @@ public class Solver implements EntryPoint {
      * @param possible Accumulator of possible moves
      * @param permutation Current permutation of the tray and anchor word
      * @param tray Current state of the tray
-     * @param anchorRow utils.Tray at which this anchor is on
+     * @param anchorRow ScrabbleObjects.Tray at which this anchor is on
      * @param currCol Current column in recursion
      */
     private static void permuteRight(
@@ -436,8 +439,8 @@ public class Solver implements EntryPoint {
      * Check if this wordsList Absolutely contains a word.
      * This function will be checking each tile for both
      * Loose equality between the contents, and Coordinate equality.
-     * @param wordList utils.Word list to check
-     * @param word utils.Word to check for
+     * @param wordList ScrabbleObjects.Word list to check
+     * @param word ScrabbleObjects.Word to check for
      * @return If the words is Absolutely contained within the list
      */
     public static boolean wordListAbsContains(ArrayList<Word> wordList, Word word) {
@@ -479,7 +482,7 @@ public class Solver implements EntryPoint {
         char c;
         for (Word word : possibleWords) {
             for (int i = 0; i < word.size(); i++) {
-                // Check if utils.Tile i is a wildcard
+                // Check if ScrabbleObjects.Tile i is a wildcard
                 if (word.getSpaceAtIndex(i).getContents().contains("*")) {
                     wordsWithWildcards.add(word);
 
@@ -561,7 +564,7 @@ public class Solver implements EntryPoint {
         if (highestScoringMove != null) {
             String output = highestScoringMove.getSnd().output();
             output = output.split("\n")[0] + "\n";
-            output += "utils.Word is: " + highestScoringMove.getFst().toString() + "\n";
+            output += "ScrabbleObjects.Word is: " + highestScoringMove.getFst().toString() + "\n";
             output += "Score is: " + highestScore + "\n";
             BoardCompatibilityCheckData newData =
                     new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().numNewTiles());

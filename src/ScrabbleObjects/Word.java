@@ -1,4 +1,4 @@
-package utils;
+package ScrabbleObjects;
 
 import java.util.ArrayList;
 
@@ -36,7 +36,7 @@ public class Word {
 
     /**
      * Adds a space to the front of this word
-     * @param tile utils.Tile to add to front
+     * @param tile ScrabbleObjects.Tile to add to front
      */
     public void addSpaceToFront(Tile tile) {
         word.addFirst(tile);
@@ -44,7 +44,7 @@ public class Word {
 
     /**
      * Adds a tile to the end of this word
-     * @param tile utils.Tile to add to end
+     * @param tile ScrabbleObjects.Tile to add to end
      */
     public void addSpaceToEnd(Tile tile) {
         word.addLast(tile);
@@ -103,7 +103,7 @@ public class Word {
     /**
      * Checks if this word shares a space with another word. This
      * method uses space.absEquals() to check equality between each space.
-     * @param other utils.Word to compare with
+     * @param other ScrabbleObjects.Word to compare with
      * @return If these two words share a space
      */
     public boolean sharesASpaceWithAnotherWord(Word other) {
@@ -122,7 +122,7 @@ public class Word {
      * Uses space.equals() to check for equality between words. This
      * is a loose equality check, and is only done between the letters
      * of each word.
-     * @param other utils.Word to compare with
+     * @param other ScrabbleObjects.Word to compare with
      * @return If these two words are loosely equal
      */
     public boolean equals(Word other) {
@@ -150,7 +150,7 @@ public class Word {
      * Checks for absolute equality between two words. This method not
      * only checks for equality between the letters of the words, but
      * also the coordinates of the letters.
-     * @param other utils.Word to compare with
+     * @param other ScrabbleObjects.Word to compare with
      * @return If these two words are absolutely equal
      */
     public boolean absEquals(Word other) {

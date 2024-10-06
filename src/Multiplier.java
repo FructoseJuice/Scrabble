@@ -1,6 +1,6 @@
 /**
  * This class describes a Multiplier in scrabble
- * It defines the type of multiplier it is, utils.Word, or Letter,
+ * It defines the type of multiplier it is, ScrabbleObjects.Word, or Letter,
  * and the value of it, One, Two, or Three.
  */
 public class Multiplier {
@@ -31,7 +31,7 @@ public class Multiplier {
             value = MultiplierValue.THREE;
             //Check if word or letter
             if (spaceContent.charAt(0) == '3') {
-                //utils.Word
+                //ScrabbleObjects.Word
                 type = MultiplierType.WORD;
             } else {
                 //Letter
@@ -41,7 +41,7 @@ public class Multiplier {
             value = MultiplierValue.TWO;
             //Check if word or letter
             if (spaceContent.charAt(0) == '2') {
-                //utils.Word
+                //ScrabbleObjects.Word
                 type = MultiplierType.WORD;
             } else {
                 //Letter

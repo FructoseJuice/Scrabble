@@ -1,4 +1,4 @@
-import Trie.Trie;
+import utils.Trie.Trie;
 import utils.BoardCompatibilityCheckData;
 import utils.Pair;
 

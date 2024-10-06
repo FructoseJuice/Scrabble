@@ -1,4 +1,4 @@
-package utils;
+package ScrabbleObjects;
 
 /**
  * Brandon W. Hidalgo
