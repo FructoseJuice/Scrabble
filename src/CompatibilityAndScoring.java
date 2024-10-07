@@ -1,3 +1,4 @@
+import utils.Board;
 import utils.Trie.Trie;
 import utils.BoardCompatibilityCheckData;
 import utils.Pair;

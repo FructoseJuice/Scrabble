@@ -1,3 +1,5 @@
+package utils;
+
 import ScrabbleObjects.Multiplier;
 import ScrabbleObjects.Tile;
 import ScrabbleObjects.Word;

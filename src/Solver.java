@@ -146,7 +146,7 @@ public class Solver implements EntryPoint {
     /**
      * Finds all "anchors" on the board. An anchor is an empty space immediately to the left
      * or right of a letter.
-     * @param board Board to check
+     * @param board utils.Board to check
      * @return All anchors
      */
     public static ArrayList<Pair<Pair<Tile, Word>, Side>> generateAnchors(Board board) {
@@ -261,7 +261,7 @@ public class Solver implements EntryPoint {
 
     /**
      * Generate all the possible moves that the AI can make
-     * @param originalBoard Board to place on
+     * @param originalBoard utils.Board to place on
      * @param anchors Anchor positions and linked words
      * @return Possible moves
      */
@@ -374,7 +374,7 @@ public class Solver implements EntryPoint {
      * Simply iterate to the right of the found anchor space
      * and find all permutations of the current tray.
      * @param dictionary Dictionary
-     * @param board Input Board
+     * @param board Input utils.Board
      * @param possible Accumulator of possible moves
      * @param permutation Current permutation of the tray and anchor word
      * @param tray Current state of the tray

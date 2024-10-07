@@ -6,6 +6,7 @@
  */
 
 import ScrabbleObjects.Multiplier;
+import utils.Board;
 import utils.Trie.Trie;
 import utils.BoardCompatibilityCheckData;
 import ScrabbleObjects.Tile;
@@ -86,8 +87,8 @@ public interface EntryPoint {
      * The resultBoard must have only legal words
      * All words in the resultBoard must be connected
      * @param dictionary Dictionary of legal words
-     * @param originalBoard Original Board
-     * @param resultBoard Original Board after a move has been made
+     * @param originalBoard Original utils.Board
+     * @param resultBoard Original utils.Board after a move has been made
      * @return Data describing how the compatibility check went
      */
     static BoardCompatibilityCheckData areBoardsCompatible(Trie dictionary, Board originalBoard, Board resultBoard) {
@@ -281,7 +282,7 @@ public interface EntryPoint {
     /**
      * Scores an individual word. Takes into account the word multiplier, and letter multipliers.
      * @param word ScrabbleObjects.Word to score
-     * @param board Board that contains the multipliers
+     * @param board utils.Board that contains the multipliers
      * @return Score value of this word
      */
      static int scoreWord(Word word, Board board) {
