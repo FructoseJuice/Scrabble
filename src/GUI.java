@@ -22,6 +22,8 @@ public class GUI extends Application implements EntryPoint {
 
     ArrayList<GUITile> bag = new ArrayList<>(100);
 
+    public static GUITile selectedTile = null;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -38,6 +40,11 @@ public class GUI extends Application implements EntryPoint {
         GUITray playerTray = new GUITray(new ArrayList<>(bag.subList(7, 14)));
         bag = new ArrayList<>(bag.subList(14, bag.size()));
 
+        // Make event listeners for playerTray
+        for (Tile tile : playerTray.getSpacesArray()) {
+            setEventListenerOnPlayerTile((GUITile) tile);
+        }
+
 
         GUIBoard guiBoard = new GUIBoard(new Board(15, BoardLayouts.getBoardLayout(15)));
 
@@ -50,6 +57,18 @@ public class GUI extends Application implements EntryPoint {
         primaryStage.setScene(root);
         primaryStage.setTitle("Scrabble");
         primaryStage.show();
+    }
+
+    private void setEventListenerOnPlayerTile(GUITile tile) {
+        tile.getRoot().setOnMouseClicked(event -> {
+            if (selectedTile != null) {
+                selectedTile.toggleUserSelectionIndicator();
+            }
+
+            selectedTile = tile;
+
+            tile.toggleUserSelectionIndicator();
+        });
     }
 
     private void fillBag() {
