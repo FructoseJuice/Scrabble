@@ -42,7 +42,7 @@ public class GUIBoard extends Board {
 
                 //Add space to board
                 newBoard[i][j] = new GUITile(spaceContent, i, j);
-                root.add(newBoard[i][j].getRoot(), i, j);
+                root.add(newBoard[i][j].getRoot(), j, i);
 
                 //Add multiplier to board
                 newMultiplierBoard[i][j] = new Multiplier(spaceContent);
