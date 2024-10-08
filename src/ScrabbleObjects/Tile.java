@@ -39,6 +39,14 @@ public class Tile {
         return row;
     }
 
+    public void setCol(int col) {
+        this.col = col;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
     public void transpose() {
         int temp = col;
         col = row;

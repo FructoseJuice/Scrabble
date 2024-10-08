@@ -11,6 +11,13 @@ import java.util.ArrayList;
 public class GUITray extends Tray {
     private HBox guiTray;
 
+    public GUITray() {
+        super();
+        guiTray = new HBox();
+        guiTray.setAlignment(Pos.CENTER);
+        guiTray.setSpacing(5);
+    }
+
     public GUITray(ArrayList<Tile> initTray) {
         super(initTray);
 
@@ -21,6 +28,11 @@ public class GUITray extends Tray {
         for (Tile tile : initTray) {
             guiTray.getChildren().add(((GUITile) tile).getRoot());
         }
+    }
+
+    public void addTile(GUITile tile) {
+        addSpace(tile);
+        guiTray.getChildren().add(tile.getRoot());
     }
 
     //public Tray getTray() {

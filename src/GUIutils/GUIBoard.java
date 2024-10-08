@@ -1,28 +1,59 @@
 package GUIutils;
 
+import ScrabbleObjects.Multiplier;
+import ScrabbleObjects.Tile;
 import javafx.scene.layout.GridPane;
 import utils.Board;
 
-public class GUIBoard {
-    private Board arrayBoard;
-    private GridPane guiBoard;
+import java.util.ArrayList;
+import java.util.List;
 
+public class GUIBoard extends Board {
+    private GridPane root;
 
-    public GUIBoard(Board board) {
-        arrayBoard = board;
-        guiBoard = new GridPane(board.BOARD_SIZE, board.BOARD_SIZE);
-        guiBoard.setHgap(3);
-        guiBoard.setVgap(3);
+    public GUIBoard(int size, String initContents) {
+        super(size);
 
-        for (int i = 0; i < board.BOARD_SIZE; i++) {
-            for (int j = 0; j < board.BOARD_SIZE; j++) {
-                GUITile newTile = new GUITile(board.getTileAtCoordinates(i, j).getContents(), i, j);
-                guiBoard.add(newTile.getRoot(), i, j);
+        GUITile[][] newBoard = new GUITile[size][size];
+        Multiplier[][] newMultiplierBoard = new Multiplier[size][size];
+
+        root = new GridPane(BOARD_SIZE, BOARD_SIZE);
+        root.setHgap(3);
+        root.setVgap(3);
+
+        //Initialize empty board so that we can score later on
+        String [] splitContents;
+
+        //Initialize non-empty spaces
+        splitContents = initContents.split("\n");
+
+        String spaceContent = "";
+        for (int i = 0; i < splitContents.length; i++) {
+            //Split row by " "
+            ArrayList<String> row = new ArrayList<>(List.of(splitContents[i].split(" ")));
+
+            //Remove blank elements
+            while (row.remove("")) {
+                continue;
+            }
+
+            for (int j = 0; j < row.size(); j++) {
+                spaceContent = row.get(j);
+
+                //Add space to board
+                newBoard[i][j] = new GUITile(spaceContent, i, j);
+                root.add(newBoard[i][j].getRoot(), i, j);
+
+                //Add multiplier to board
+                newMultiplierBoard[i][j] = new Multiplier(spaceContent);
             }
         }
+
+        setBoard(newBoard);
+        setMultiplierBoard(newMultiplierBoard);
     }
 
     public GridPane getRoot() {
-        return guiBoard;
+        return root;
     }
 }

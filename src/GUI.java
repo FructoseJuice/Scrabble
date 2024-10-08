@@ -12,12 +12,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import utils.Board;
 import utils.BoardLayouts;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -26,6 +23,9 @@ public class GUI extends Application implements EntryPoint {
     ArrayList<GUITile> bag = new ArrayList<>(100);
 
     public static GUITile selectedTile = null;
+    public ArrayList<GUITile> placedTiles = new ArrayList<>();
+
+    public GUITray playerTray = new GUITray();
 
     private Label aiScore = new Label("0");
     private Label playerScore = new Label("0");
@@ -37,23 +37,6 @@ public class GUI extends Application implements EntryPoint {
     @Override
     public void start(Stage primaryStage) {
         VBox rootDisplay = new VBox();
-
-        //Fill bag and shuffle
-        fillBag();
-
-        // Initialize trays with 7 tiles each
-        Tray AITray = new Tray(new ArrayList<>(bag.subList(0, 7)));
-        GUITray playerTray = new GUITray(new ArrayList<>(bag.subList(7, 14)));
-        bag = new ArrayList<>(bag.subList(14, bag.size()));
-
-        // Make event listeners for playerTray
-        for (Tile tile : playerTray.getSpacesArray()) {
-            setEventListenerOnPlayerTile((GUITile) tile);
-        }
-
-        GUIBoard guiBoard = new GUIBoard(new Board(15, BoardLayouts.getBoardLayout(15)));
-
-        Button playerMoveSubmitButton = new Button("Submit");
 
         // Score display banner
         Label aiScoreLabel = new Label("AI Score: ");
@@ -71,9 +54,56 @@ public class GUI extends Application implements EntryPoint {
         scoreBanner.setAlignment(Pos.CENTER);
         scoreBanner.getChildren().addAll(aiScoreLabel, aiScore, spacer, playerScoreLabel, playerScore);
 
+        //Fill bag and shuffle
+        fillBag();
+
+        // Initialize trays with 7 tiles each
+        Tray AITray = new Tray(new ArrayList<>(bag.subList(0, 7)));
+        for (GUITile newTile : bag.subList(0, 7)) {
+            playerTray.addTile(newTile);
+        }
+
+        bag = new ArrayList<>(bag.subList(14, bag.size()));
+
+        // Make event listeners for playerTray
+        for (Tile tile : playerTray.getSpacesArray()) {
+            setEventListenerOnPlayerTile((GUITile) tile);
+        }
+
+        // Make gui board
+        GUIBoard guiBoard = new GUIBoard(15, BoardLayouts.getBoardLayout(15));
+
+        // Make event listeners for board spaces
+        for (int i = 0; i < guiBoard.BOARD_SIZE; i++) {
+            for (int j = 0; j < guiBoard.BOARD_SIZE; j++) {
+                GUITile tile = (GUITile) guiBoard.getTileAtCoordinates(i, j);
+
+                tile.getRoot().setOnMouseClicked(event -> {
+                    setEventListenerOnBoardSpace(tile);
+                });
+            }
+        }
+
+
+        // Make submission and reset button
+        Button playerMoveSubmitButton = new Button("Submit");
+        Button playerReset = new Button("Reset");
+
+        playerMoveSubmitButton.setOnMouseClicked(event -> {
+
+        });
+
+        playerReset.setOnMouseClicked(event -> {
+            resetPlayerMove(guiBoard);
+        });
+
+        HBox trailer = new HBox();
+        Region buttonSpacer = new Region();
+        HBox.setHgrow(buttonSpacer, Priority.ALWAYS);
+        trailer.getChildren().addAll(playerReset, buttonSpacer, playerMoveSubmitButton);
 
         //Set all children on root
-        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), playerMoveSubmitButton);
+        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), trailer);
 
         //Set properties of root display
         rootDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
@@ -97,6 +127,43 @@ public class GUI extends Application implements EntryPoint {
 
             tile.toggleUserSelectionIndicator();
         });
+    }
+
+    private void setEventListenerOnBoardSpace(GUITile space) {
+        // Check if selected space is already filled
+        if (space.getRoot().getChildren().size() > 2) return;
+
+        if (selectedTile != null) {
+            //Set on board
+            playerTray.getRoot().getChildren().remove(selectedTile.getRoot());
+            space.getRoot().getChildren().add(selectedTile.getRoot());
+            //Set coordinates
+            selectedTile.setCol(space.getCol());
+            selectedTile.setRow(space.getRow());
+            //Toggle selection indicator
+            selectedTile.toggleUserSelectionIndicator();
+            //Add to placed tiles
+            placedTiles.add(selectedTile);
+            //Remove event handler
+            selectedTile.getRoot().setOnMouseClicked(event -> {});
+            selectedTile = null;
+        }
+    }
+
+    private void resetPlayerMove(GUIBoard board) {
+        for (GUITile placedTile : placedTiles) {
+            ((GUITile) board.getTileAtCoordinates(placedTile.getRow(), placedTile.getCol())).getRoot().getChildren().remove(placedTile.getRoot());
+            placedTile.setRow(-1);
+            placedTile.setCol(-1);
+            playerTray.addTile(placedTile);
+            setEventListenerOnPlayerTile(placedTile);
+        }
+
+        placedTiles = new ArrayList<>();
+    }
+
+    private void processPlayerMove() {
+
     }
 
     private void fillBag() {

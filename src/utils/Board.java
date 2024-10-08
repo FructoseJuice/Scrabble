@@ -16,8 +16,8 @@ import java.util.List;
  * words contained, spaces at specified coordinates, and multipliers.
  */
 public class Board {
-    private final Tile[][] board;
-    private final Multiplier[][] multiplierBoard;
+    private Tile[][] board;
+    private Multiplier[][] multiplierBoard;
     public final int BOARD_SIZE;
 
     public Board(int size, String initContents) {
@@ -57,6 +57,19 @@ public class Board {
         this.board = board;
         BOARD_SIZE = size;
         this.multiplierBoard = multiplierBoard;
+    }
+
+    public Board(int size) {
+        //Make empty board
+        BOARD_SIZE = size;
+    }
+
+    public void setBoard(Tile[][] newBoard) {
+        board = newBoard;
+    }
+
+    public void setMultiplierBoard(Multiplier[][] board) {
+        multiplierBoard = board;
     }
 
     /**
