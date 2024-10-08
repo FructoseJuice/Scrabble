@@ -5,16 +5,19 @@ import ScrabbleObjects.Tile;
 import ScrabbleObjects.Tray;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import utils.Board;
 import utils.BoardLayouts;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -23,6 +26,9 @@ public class GUI extends Application implements EntryPoint {
     ArrayList<GUITile> bag = new ArrayList<>(100);
 
     public static GUITile selectedTile = null;
+
+    private Label aiScore = new Label("0");
+    private Label playerScore = new Label("0");
 
     public static void main(String[] args) {
         launch(args);
@@ -45,14 +51,36 @@ public class GUI extends Application implements EntryPoint {
             setEventListenerOnPlayerTile((GUITile) tile);
         }
 
-
         GUIBoard guiBoard = new GUIBoard(new Board(15, BoardLayouts.getBoardLayout(15)));
 
+        Button playerMoveSubmitButton = new Button("Submit");
 
-        rootDisplay.getChildren().addAll(guiBoard.getRoot(), playerTray.getRoot());
-        rootDisplay.setPadding(new Insets(5, 5, 5, 5));
+        // Score display banner
+        Label aiScoreLabel = new Label("AI Score: ");
+        Label playerScoreLabel = new Label("Player score: ");
+
+        aiScoreLabel.setTextFill(Paint.valueOf("White"));
+        aiScore.setTextFill(Paint.valueOf("White"));
+        playerScoreLabel.setTextFill(Paint.valueOf("White"));
+        playerScore.setTextFill(Paint.valueOf("White"));
+
+        //Make score banner
+        HBox scoreBanner = new HBox();
+        Region spacer = new Region();
+        spacer.setPadding(new Insets(0, 5, 0, 5));
+        scoreBanner.setAlignment(Pos.CENTER);
+        scoreBanner.getChildren().addAll(aiScoreLabel, aiScore, spacer, playerScoreLabel, playerScore);
+
+
+        //Set all children on root
+        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), playerMoveSubmitButton);
+
+        //Set properties of root display
         rootDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
+        rootDisplay.setPadding(new Insets(5, 5, 5, 5));
         rootDisplay.setSpacing(10);
+
+        // Set scene on stage
         Scene root = new Scene(rootDisplay);
         primaryStage.setScene(root);
         primaryStage.setTitle("Scrabble");
