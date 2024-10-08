@@ -13,7 +13,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+import utils.Board;
+import utils.BoardCompatibilityCheckData;
 import utils.BoardLayouts;
+import utils.Trie.Trie;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,13 +33,18 @@ public class GUI extends Application implements EntryPoint {
     private Label aiScore = new Label("0");
     private Label playerScore = new Label("0");
 
+    private static Trie dictionary;
+
     public static void main(String[] args) {
+        dictionary = EntryPoint.parseClIForTrie(args);
+
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) {
         VBox rootDisplay = new VBox();
+
 
         // Score display banner
         Label aiScoreLabel = new Label("AI Score: ");
@@ -90,7 +98,7 @@ public class GUI extends Application implements EntryPoint {
         Button playerReset = new Button("Reset");
 
         playerMoveSubmitButton.setOnMouseClicked(event -> {
-
+            processPlayerMove(guiBoard);
         });
 
         playerReset.setOnMouseClicked(event -> {
@@ -162,8 +170,35 @@ public class GUI extends Application implements EntryPoint {
         placedTiles = new ArrayList<>();
     }
 
-    private void processPlayerMove() {
+    private void processPlayerMove(GUIBoard board) {
+        //Make result board
+        Board resultBoard = board.copyOf();
 
+        //place tiles
+        for (GUITile placedTile : placedTiles) {
+            resultBoard.setTileOnBoard(placedTile);
+        }
+
+        //Check compatibility
+        BoardCompatibilityCheckData data = EntryPoint.areBoardsCompatible(dictionary, board, resultBoard);
+
+        //Make move if legal
+        if (data.isLegal()) {
+            //Set score
+            int score = EntryPoint.scorePlay(board, data.numNewTiles(), data.newWords());
+            playerScore.setText(String.valueOf(Integer.parseInt(playerScore.getText()) + score));
+
+            for (GUITile placedTile : placedTiles) {
+                //Set tiles on board
+                board.setTileOnBoard(placedTile);
+                board.getMultiplierAtCoordinates(placedTile.getRow(), placedTile.getCol()).setMultiplierAsUsed();
+            }
+
+            placedTiles = new ArrayList<>();
+        } else {
+            //Put tiles back in tray
+            resetPlayerMove(board);
+        }
     }
 
     private void fillBag() {
