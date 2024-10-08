@@ -1,4 +1,5 @@
-package ScrabbleObjects; /**
+package ScrabbleObjects;
+/**
  * Brandon W. Hidalgo
  * I realized that the ScrabbleObjects.Tray is basically just a word with some functionality differences.
  * So I just had it extend ScrabbleObjects.Word and remove said functionality, and add some more ScrabbleObjects.Tray specific methods.
