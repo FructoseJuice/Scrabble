@@ -85,7 +85,7 @@ public class GUI extends Application implements EntryPoint {
         }
 
         // Make gui board
-        board = new GUIBoard(7, BoardLayouts.getBoardLayout(7));
+        board = new GUIBoard(15, BoardLayouts.getBoardLayout(15));
         board.getRoot().setAlignment(Pos.CENTER);
 
         // Make event listeners for board spaces
@@ -142,7 +142,7 @@ public class GUI extends Application implements EntryPoint {
                 setEventListenerOnPlayerTile(newTile);
             }
 
-            updateGameInfoDisplay("Player has swapped out tiles.");
+            updateGameInfoDisplay("Player has swapped out tiles.\n");
 
             // End player turn
             switchPlayerToMove(PlayerType.HUMAN);
@@ -281,9 +281,8 @@ public class GUI extends Application implements EntryPoint {
     }
 
     private void updateGameInfoDisplay(String output) {
-        String old = gameInfoDisplay.getText();
-        gameInfoDisplay.setText(output + "\n\n");
-        gameInfoDisplay.appendText(old);
+        gameInfoDisplay.appendText("\n" + output);
+        gameInfoDisplay.setScrollTop(Double.MAX_VALUE);
     }
 
     private String newWordsToString(ArrayList<Word> newWords) {
@@ -374,7 +373,7 @@ public class GUI extends Application implements EntryPoint {
             AITray.addSpace(newTiles.removeFirst());
         }
 
-        updateGameInfoDisplay("AI has swapped out tiles in tray.");
+        updateGameInfoDisplay("AI has swapped out tiles in tray.\n");
 
         switchPlayerToMove(PlayerType.AI);
     }
@@ -399,7 +398,7 @@ public class GUI extends Application implements EntryPoint {
         //Add gui tiles to board
         board.setGUITilesOnBoard(guiTiles);
 
-        updateGameInfoDisplay("AI has made move: \n" + move.newPlayString() + "New Word(s) are: " + newWordsToString(move.newWords()) + "\nScore is: " + move.score());
+        updateGameInfoDisplay("AI has made move: \n" + move.newPlayString() + "New Word(s) are: " + newWordsToString(move.newWords()) + "\nScore: " + move.score() + "\n");
 
         switchPlayerToMove(PlayerType.AI);
     }
