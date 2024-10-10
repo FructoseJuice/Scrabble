@@ -3,6 +3,7 @@ import GUIutils.GUITile;
 import GUIutils.GUITray;
 import ScrabbleObjects.Tile;
 import ScrabbleObjects.Tray;
+import ScrabbleObjects.Word;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,6 +17,7 @@ import javafx.stage.Stage;
 import utils.Board;
 import utils.BoardCompatibilityCheckData;
 import utils.BoardLayouts;
+import utils.Pair;
 import utils.Trie.Trie;
 
 import java.util.ArrayList;
@@ -28,7 +30,8 @@ public class GUI extends Application implements EntryPoint {
     public static GUITile selectedTile = null;
     public ArrayList<GUITile> placedTiles = new ArrayList<>();
 
-    public GUITray playerTray = new GUITray();
+    private GUITray playerTray = new GUITray();
+    private Tray AITray = new Tray();
 
     private Label aiScore = new Label("0");
     private Label playerScore = new Label("0");
@@ -66,7 +69,7 @@ public class GUI extends Application implements EntryPoint {
         fillBag();
 
         // Initialize trays with 7 tiles each
-        Tray AITray = new Tray(new ArrayList<>(bag.subList(0, 7)));
+        AITray = new Tray(new ArrayList<>(bag.subList(0, 7)));
         for (GUITile newTile : bag.subList(0, 7)) {
             playerTray.addTile(newTile);
         }
@@ -98,7 +101,10 @@ public class GUI extends Application implements EntryPoint {
         Button playerReset = new Button("Reset");
 
         playerMoveSubmitButton.setOnMouseClicked(event -> {
-            processPlayerMove(guiBoard);
+            if (processPlayerMove(guiBoard)) {
+                //Make ai move is player moved
+                makeAIMove(dictionary, guiBoard);
+            }
         });
 
         playerReset.setOnMouseClicked(event -> {
@@ -170,7 +176,7 @@ public class GUI extends Application implements EntryPoint {
         placedTiles = new ArrayList<>();
     }
 
-    private void processPlayerMove(GUIBoard board) {
+    private boolean processPlayerMove(GUIBoard board) {
         //Make result board
         Board resultBoard = board.copyOf();
 
@@ -195,10 +201,31 @@ public class GUI extends Application implements EntryPoint {
             }
 
             placedTiles = new ArrayList<>();
+            return true;
         } else {
             //Put tiles back in tray
             resetPlayerMove(board);
         }
+
+        return false;
+    }
+
+    private void makeAIMove(Trie dictionary, GUIBoard board) {
+        Pair<Word, BoardCompatibilityCheckData> move = Solver.solveBoardState(dictionary, new Pair<>(board, AITray));
+
+        if (move != null) {
+            // Turn tiles into GUITiles
+            ArrayList<GUITile> tiles = new ArrayList<>();
+            //for (int i = 0; ; i++) {
+
+            //}
+            // Remove moved tiles
+
+        } else {
+            //AI Couldn't find a move
+        }
+
+        System.out.println();
     }
 
     private void fillBag() {
