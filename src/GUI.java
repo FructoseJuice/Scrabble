@@ -10,14 +10,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
-import utils.Board;
-import utils.BoardCompatibilityCheckData;
-import utils.BoardLayouts;
-import utils.Pair;
+import utils.*;
 import utils.Trie.Trie;
 
 import java.util.ArrayList;
@@ -25,18 +23,19 @@ import java.util.Collections;
 
 public class GUI extends Application implements EntryPoint {
 
-    ArrayList<GUITile> bag = new ArrayList<>(100);
+    private static Trie dictionary;
+    private static GUIBoard board;
 
-    public static GUITile selectedTile = null;
-    public ArrayList<GUITile> placedTiles = new ArrayList<>();
+    private ArrayList<GUITile> bag = new ArrayList<>(100);
+
+    private static GUITile selectedTile = null;
+    private ArrayList<GUITile> placedTiles = new ArrayList<>();
 
     private GUITray playerTray = new GUITray();
     private Tray AITray = new Tray();
 
-    private Label aiScore = new Label("0");
-    private Label playerScore = new Label("0");
-
-    private static Trie dictionary;
+    private final Label aiScore = new Label("0");
+    private final Label playerScore = new Label("0");
 
     public static void main(String[] args) {
         dictionary = EntryPoint.parseClIForTrie(args);
@@ -82,13 +81,13 @@ public class GUI extends Application implements EntryPoint {
         }
 
         // Make gui board
-        GUIBoard guiBoard = new GUIBoard(7, BoardLayouts.getBoardLayout(7));
-        guiBoard.getRoot().setAlignment(Pos.CENTER);
+        board = new GUIBoard(7, BoardLayouts.getBoardLayout(7));
+        board.getRoot().setAlignment(Pos.CENTER);
 
         // Make event listeners for board spaces
-        for (int i = 0; i < guiBoard.BOARD_SIZE; i++) {
-            for (int j = 0; j < guiBoard.BOARD_SIZE; j++) {
-                GUITile tile = (GUITile) guiBoard.getTileAtCoordinates(i, j);
+        for (int i = 0; i < board.BOARD_SIZE; i++) {
+            for (int j = 0; j < board.BOARD_SIZE; j++) {
+                GUITile tile = (GUITile) board.getTileAtCoordinates(i, j);
 
                 tile.getRoot().setOnMouseClicked(event -> {
                     setEventListenerOnBoardSpace(tile);
@@ -97,37 +96,81 @@ public class GUI extends Application implements EntryPoint {
         }
 
 
-        // Make submission and reset button
+        // Make submission, reset, and swap buttons
         Button playerMoveSubmitButton = new Button("Submit Play");
+        Button swapTilesButton = new Button("Swap Tiles");
         Button playerReset = new Button("Reset Play");
 
         playerMoveSubmitButton.setOnMouseClicked(event -> {
-            if (processPlayerMove(guiBoard)) {
-                //Make ai move is player moved
-                makeAIMove(dictionary, guiBoard);
+            if (processPlayerMove(board)) {
+                switchPlayerToMove(PlayerType.HUMAN);
             }
         });
 
+        swapTilesButton.setOnMouseClicked(event -> {
+            // Reset player move
+            resetPlayerMove();
+
+            // Collect all flipped tiles
+            ArrayList<GUITile> flippedTiles = new ArrayList<>();
+            for (Tile tile : playerTray.getSpacesArray()) {
+                if (((GUITile) tile).isFlipped()) {
+                    flippedTiles.add((GUITile) tile);
+                }
+            }
+
+            // If no flipped tiles found return
+            if (flippedTiles.isEmpty()) return;
+
+            // Remove flipped tiles from player tray
+            for (GUITile tile : flippedTiles) {
+                tile.flipTile();
+                tile.getRoot().setOnMouseClicked(null);
+                playerTray.removeTileFromTray(tile);
+                playerTray.getRoot().getChildren().remove(tile.getRoot());
+                bag.add(tile);
+            }
+
+            // Swap new tiles into player tray
+            for (int i = 0; i < flippedTiles.size(); i++) {
+                GUITile newTile = bag.removeFirst();
+                playerTray.addGUITile(newTile);
+                setEventListenerOnPlayerTile(newTile);
+            }
+
+            // End player turn
+            switchPlayerToMove(PlayerType.HUMAN);
+        });
+
+
         playerReset.setOnMouseClicked(event -> {
-            resetPlayerMove(guiBoard);
+            resetPlayerMove();
         });
 
 
         // Make button trailer HBox
         HBox trailer = new HBox();
-        Region buttonSpacer = new Region();
-        HBox.setHgrow(buttonSpacer, Priority.ALWAYS);
-        trailer.getChildren().addAll(playerReset, buttonSpacer, playerMoveSubmitButton);
+        //Spacers to prettify display
+        Region buttonSpacer1 = new Region();
+        Region buttonSpacer2 = new Region();
+        HBox.setHgrow(buttonSpacer1, Priority.ALWAYS);
+        HBox.setHgrow(buttonSpacer2, Priority.ALWAYS);
+        //Set properties and add children
+        trailer.setSpacing(5);
+        trailer.getChildren().addAll(playerReset, buttonSpacer1, swapTilesButton, buttonSpacer2, playerMoveSubmitButton);
+
 
         //Set properties of root display
         rootDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         rootDisplay.setPadding(new Insets(5, 5, 5, 5));
         rootDisplay.setSpacing(10);
 
-        //Set all children on root
-        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), trailer);
+
+        //Set all children on root display
+        rootDisplay.getChildren().addAll(scoreBanner, board.getRoot(), playerTray.getRoot(), trailer);
         rootDisplay.setAlignment(Pos.CENTER);
         VBox.setVgrow(rootDisplay, Priority.ALWAYS);
+
 
         // Set scene on stage
         Scene root = new Scene(rootDisplay);
@@ -138,13 +181,30 @@ public class GUI extends Application implements EntryPoint {
 
     private void setEventListenerOnPlayerTile(GUITile tile) {
         tile.getRoot().setOnMouseClicked(event -> {
-            if (selectedTile != null) {
-                selectedTile.toggleUserSelectionIndicator();
+            // Check if left click
+            if (event.getButton() == MouseButton.PRIMARY) {
+                // Set this as the selected tile
+                if (selectedTile != null) {
+                    selectedTile.toggleUserSelectionIndicator();
+                }
+
+                //Un flip this tile
+                if (tile.isFlipped()) tile.flipTile();
+
+                selectedTile = tile;
+
+                tile.toggleUserSelectionIndicator();
+            } else if (event.getButton() == MouseButton.SECONDARY) {
+                // Deselect this tile if it's currently selected
+                if (selectedTile != null && selectedTile == tile) {
+                    tile.toggleUserSelectionIndicator();
+                    selectedTile = null;
+                }
+
+                // Flip this tile
+                tile.flipTile();
             }
 
-            selectedTile = tile;
-
-            tile.toggleUserSelectionIndicator();
         });
     }
 
@@ -153,6 +213,8 @@ public class GUI extends Application implements EntryPoint {
         if (space.getRoot().getChildren().size() > 2) return;
 
         if (selectedTile != null) {
+            //Remove from player tray
+            playerTray.removeTileFromTray(selectedTile);
             //Set on board
             playerTray.getRoot().getChildren().remove(selectedTile.getRoot());
             space.getRoot().getChildren().add(selectedTile.getRoot());
@@ -169,7 +231,15 @@ public class GUI extends Application implements EntryPoint {
         }
     }
 
-    private void resetPlayerMove(GUIBoard board) {
+    private void switchPlayerToMove(PlayerType lastMoved) {
+        if (lastMoved == PlayerType.HUMAN) {
+            makeAIMove();
+        } else {
+            //idk
+        }
+    }
+
+    private void resetPlayerMove() {
         for (GUITile placedTile : placedTiles) {
             ((GUITile) board.getTileAtCoordinates(placedTile.getRow(), placedTile.getCol())).getRoot().getChildren().remove(placedTile.getRoot());
             placedTile.setRow(-1);
@@ -199,17 +269,20 @@ public class GUI extends Application implements EntryPoint {
             int score = EntryPoint.scorePlay(board, data.newTiles().size(), data.newWords());
             playerScore.setText(String.valueOf(Integer.parseInt(playerScore.getText()) + score));
 
+            // Unflip player tiles
+            for (Tile tile : playerTray.getSpacesArray()) {
+                if (((GUITile) tile).isFlipped()) ((GUITile) tile).flipTile();
+            }
+
+            // Set tile on boards array
             for (GUITile placedTile : placedTiles) {
                 //Set tiles on board
                 board.setTileOnBoard(placedTile);
                 board.getMultiplierAtCoordinates(placedTile.getRow(), placedTile.getCol()).setMultiplierAsUsed();
-
-                //Remove from tray
-                playerTray.removeTileFromTray(placedTile);
             }
 
             // Replenish player tray
-            while (playerTray.size() < 7) {
+            while (playerTray.size() < 7 && !bag.isEmpty()) {
                 GUITile newTile = bag.removeFirst();
                 setEventListenerOnPlayerTile(newTile);
                 playerTray.addGUITile(newTile);
@@ -219,13 +292,13 @@ public class GUI extends Application implements EntryPoint {
             return true;
         } else {
             //Put tiles back in tray
-            resetPlayerMove(board);
+            resetPlayerMove();
         }
 
         return false;
     }
 
-    private void makeAIMove(Trie dictionary, GUIBoard board) {
+    private void makeAIMove() {
         Pair<Word, BoardCompatibilityCheckData> move = Solver.solveBoardState(dictionary, new Pair<>(board, AITray));
 
         if (move != null) {
@@ -239,7 +312,7 @@ public class GUI extends Application implements EntryPoint {
 
             //Replenish ai tray
             // Replenish player tray
-            while (AITray.size() < 7) {
+            while (AITray.size() < 7 && !bag.isEmpty()) {
                 AITray.addSpace(bag.removeFirst());
             }
 
@@ -249,12 +322,12 @@ public class GUI extends Application implements EntryPoint {
             //Update AI score
             int score = EntryPoint.scorePlay(board, move.getSnd().newTiles().size(), move.getSnd().newWords());
             aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + score));
+
+            switchPlayerToMove(PlayerType.AI);
         } else {
             //AI Couldn't find a move
             System.out.println();
         }
-
-        System.out.println();
     }
 
     private void fillBag() {

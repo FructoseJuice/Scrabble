@@ -12,7 +12,7 @@ public class GUITile extends Tile {
     private Rectangle background = new Rectangle(25, 25);
     private Label guiContents = new Label();
     private Multiplier multiplier;
-    private boolean moveAble;
+    private boolean flipped = false;
 
     public GUITile(String contents, int row, int col) {
         super(contents, row, col);
@@ -39,13 +39,25 @@ public class GUITile extends Tile {
     }
 
     public void toggleUserSelectionIndicator() {
-        if (moveAble) {
-            if (background.getFill() == Paint.valueOf("Chocolate")) {
-                background.setFill(Paint.valueOf("Goldenrod"));
-            } else {
-                background.setFill(Paint.valueOf("Chocolate"));
-            }
+        if (background.getFill() == Paint.valueOf("Chocolate")) {
+            background.setFill(Paint.valueOf("Goldenrod"));
+        } else {
+            background.setFill(Paint.valueOf("Chocolate"));
         }
+    }
+
+    public boolean isFlipped() {
+        return flipped;
+    }
+
+    public void flipTile() {
+        if (!flipped) {
+            guiContents.setText("");
+        } else {
+            guiContents.setText(getContents());
+        }
+
+        flipped = !flipped;
     }
 
     public StackPane getRoot() {
@@ -55,13 +67,9 @@ public class GUITile extends Tile {
     private void setBackgroundColorAndContents(String contents) {
         // Check if letter
         if (containsLetter()) {
-            moveAble = true;
-
             background.setFill(Paint.valueOf("Goldenrod"));
             guiContents.setText(contents);
         } else {
-            moveAble = false;
-
             //This is a multiplier
             if (multiplier.type == Multiplier.MultiplierType.LETTER) {
                 switch (multiplier.value) {

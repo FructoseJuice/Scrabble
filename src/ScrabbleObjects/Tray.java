@@ -22,6 +22,8 @@ public class Tray extends Word {
 
 
     public void removeTileFromTray(Tile tileToRemove) {
+        if (getSpacesArray().remove(tileToRemove)) return;
+
         // If tile is wildcard
         if (tileToRemove.getContents().contains("*")) {
             for (int i = 0; i < getSpacesArray().size(); i++) {
