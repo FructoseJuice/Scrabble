@@ -10,6 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -33,6 +34,8 @@ public class GUI extends Application implements EntryPoint {
 
     private GUITray playerTray = new GUITray();
     private Tray AITray = new Tray();
+
+    private final TextArea gameInfoDisplay = new TextArea("");
 
     private final Label aiScore = new Label("0");
     private final Label playerScore = new Label("0");
@@ -73,6 +76,7 @@ public class GUI extends Application implements EntryPoint {
             playerTray.addGUITile(newTile);
         }
 
+        // Remove tiles that were given to player trays
         bag = new ArrayList<>(bag.subList(14, bag.size()));
 
         // Make event listeners for playerTray
@@ -132,7 +136,7 @@ public class GUI extends Application implements EntryPoint {
             }
 
             // Swap new tiles into player tray
-            for (int i = 0; i < flippedTiles.size(); i++) {
+            for (int i = 0; i < flippedTiles.size() && !bag.isEmpty(); i++) {
                 GUITile newTile = bag.removeFirst();
                 playerTray.addGUITile(newTile);
                 setEventListenerOnPlayerTile(newTile);
@@ -159,6 +163,9 @@ public class GUI extends Application implements EntryPoint {
         trailer.setSpacing(5);
         trailer.getChildren().addAll(playerReset, buttonSpacer1, swapTilesButton, buttonSpacer2, playerMoveSubmitButton);
 
+        //Set properties of game info display
+        gameInfoDisplay.setEditable(false);
+        gameInfoDisplay.setStyle("-fx-control-inner-background: black; -fx-text-fill: white;");
 
         //Set properties of root display
         rootDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
@@ -167,7 +174,7 @@ public class GUI extends Application implements EntryPoint {
 
 
         //Set all children on root display
-        rootDisplay.getChildren().addAll(scoreBanner, board.getRoot(), playerTray.getRoot(), trailer);
+        rootDisplay.getChildren().addAll(scoreBanner, board.getRoot(), playerTray.getRoot(), trailer, gameInfoDisplay);
         rootDisplay.setAlignment(Pos.CENTER);
         VBox.setVgrow(rootDisplay, Priority.ALWAYS);
 
@@ -226,17 +233,53 @@ public class GUI extends Application implements EntryPoint {
             //Add to placed tiles
             placedTiles.add(selectedTile);
             //Remove event handler
-            selectedTile.getRoot().setOnMouseClicked(event -> {});
+            selectedTile.getRoot().setOnMouseClicked(event -> {
+            });
             selectedTile = null;
         }
     }
 
     private void switchPlayerToMove(PlayerType lastMoved) {
+        // Check for the move possibilities
+        PlayData playerMove = Solver.solveBoardState(dictionary, new Pair<>(board, playerTray));
+        PlayData aiMove = Solver.solveBoardState(dictionary, new Pair<>(board, AITray));
+
+        // Check if neither player has a move
+        if (playerMove == null && aiMove == null) {
+            //Game over
+        }
+
+        // Check for game over state
+        if (bag.isEmpty()) {
+            if (playerTray.isEmpty() || AITray.isEmpty()) {
+                //Game over
+            }
+
+            // Check if the player to play can move
+            if (lastMoved == PlayerType.HUMAN) {
+                if (aiMove == null) {
+                    //game over
+                }
+            } else {
+                if (playerMove == null) {
+                    //game over
+                }
+            }
+        }
+
         if (lastMoved == PlayerType.HUMAN) {
-            makeAIMove();
+            if (aiMove != null) {
+                makeAIMove(aiMove);
+            } else {
+                makeAITraySwap();
+            }
         } else {
             //idk
         }
+    }
+
+    private void updateGameInfoDisplay(String output) {
+        gameInfoDisplay.appendText(output);
     }
 
     private void resetPlayerMove() {
@@ -250,6 +293,7 @@ public class GUI extends Application implements EntryPoint {
 
         placedTiles = new ArrayList<>();
     }
+
 
     private boolean processPlayerMove(GUIBoard board) {
         //Make result board
@@ -268,6 +312,9 @@ public class GUI extends Application implements EntryPoint {
             //Set score
             int score = EntryPoint.scorePlay(board, data.newTiles().size(), data.newWords());
             playerScore.setText(String.valueOf(Integer.parseInt(playerScore.getText()) + score));
+
+            //Update game info
+            updateGameInfoDisplay("Player made move: \n" + data.output() + "Score: " + score + "\n");
 
             // Unflip player tiles
             for (Tile tile : playerTray.getSpacesArray()) {
@@ -298,37 +345,49 @@ public class GUI extends Application implements EntryPoint {
         return false;
     }
 
-    private void makeAIMove() {
-        Pair<Word, BoardCompatibilityCheckData> move = Solver.solveBoardState(dictionary, new Pair<>(board, AITray));
+    private void makeAITraySwap() {
+        ArrayList<GUITile> newTiles = new ArrayList<>();
 
-        if (move != null) {
-            // Turn tiles into GUITiles and remove from ai tray
-            ArrayList<GUITile> guiTiles = new ArrayList<>();
-            for (Tile ogTile : move.getSnd().newTiles()) {
-                guiTiles.add(new GUITile(ogTile));
-
-                AITray.removeTileFromTray(ogTile);
-            }
-
-            //Replenish ai tray
-            // Replenish player tray
-            while (AITray.size() < 7 && !bag.isEmpty()) {
-                AITray.addSpace(bag.removeFirst());
-            }
-
-            //Add gui tiles to board
-            board.setGUITilesOnBoard(guiTiles);
-
-            //Update AI score
-            int score = EntryPoint.scorePlay(board, move.getSnd().newTiles().size(), move.getSnd().newWords());
-            aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + score));
-
-            switchPlayerToMove(PlayerType.AI);
-        } else {
-            //AI Couldn't find a move
-            System.out.println();
+        while (!AITray.isEmpty() && !bag.isEmpty()) {
+            GUITile newTile = bag.removeFirst();
+            newTiles.add(newTile);
+            bag.add((GUITile) AITray.getSpacesArray().removeFirst());
         }
+
+        while (!newTiles.isEmpty()) {
+            AITray.addSpace(newTiles.removeFirst());
+        }
+
+        switchPlayerToMove(PlayerType.AI);
     }
+
+    private void makeAIMove(PlayData move) {
+        // Turn tiles into GUITiles and remove from ai tray
+        ArrayList<GUITile> guiTiles = new ArrayList<>();
+        for (Tile ogTile : move.newWord().getSpacesArray()) {
+            guiTiles.add(new GUITile(ogTile));
+
+            AITray.removeTileFromTray(ogTile);
+        }
+
+        //Replenish ai tray
+        // Replenish player tray
+        while (AITray.size() < 7 && !bag.isEmpty()) {
+            AITray.addSpace(bag.removeFirst());
+        }
+
+        //Update AI score
+        //int score = EntryPoint.scorePlay(board, move.newWord().size(), move.getSnd().newWords());
+        aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + move.score()));
+
+        //Add gui tiles to board
+        board.setGUITilesOnBoard(guiTiles);
+
+        updateGameInfoDisplay("AI has made move: " + move.output() + "Score is: " + move.score() + "\n");
+
+        switchPlayerToMove(PlayerType.AI);
+    }
+
 
     private void fillBag() {
         String freq =
