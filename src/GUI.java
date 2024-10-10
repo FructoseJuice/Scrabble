@@ -191,7 +191,7 @@ public class GUI extends Application implements EntryPoint {
         //Make move if legal
         if (data.isLegal()) {
             //Set score
-            int score = EntryPoint.scorePlay(board, data.numNewTiles(), data.newWords());
+            int score = EntryPoint.scorePlay(board, data.newTiles().size(), data.newWords());
             playerScore.setText(String.valueOf(Integer.parseInt(playerScore.getText()) + score));
 
             for (GUITile placedTile : placedTiles) {

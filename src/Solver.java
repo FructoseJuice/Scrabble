@@ -552,7 +552,7 @@ public class Solver implements EntryPoint {
         int highestScore = 0;
         int score;
         for (Pair<Word, BoardCompatibilityCheckData> move : legalMoves) {
-            score = EntryPoint.scorePlay(originalBoard, move.getSnd().numNewTiles(), move.getSnd().newWords());
+            score = EntryPoint.scorePlay(originalBoard, move.getSnd().newTiles().size(), move.getSnd().newWords());
 
             if (highestScore < score) {
                 highestScoringMove = move;
@@ -567,7 +567,7 @@ public class Solver implements EntryPoint {
             output += "ScrabbleObjects.Word is: " + highestScoringMove.getFst().toString() + "\n";
             output += "Score is: " + highestScore + "\n";
             BoardCompatibilityCheckData newData =
-                    new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().numNewTiles());
+                    new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().newTiles());
 
             return new Pair<>(highestScoringMove.getFst(), newData);
         }

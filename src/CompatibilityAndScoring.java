@@ -27,10 +27,12 @@ public class CompatibilityAndScoring implements EntryPoint {
             BoardCompatibilityCheckData compatibilityCheckData = EntryPoint.areBoardsCompatible(dictionary, originalBoard, resultBoard);
 
             if (compatibilityCheckData.isLegal()) {
-                int score = EntryPoint.scorePlay(originalBoard, compatibilityCheckData.numNewTiles(), compatibilityCheckData.newWords());
+                int score = EntryPoint.scorePlay(originalBoard, compatibilityCheckData.newTiles().size(), compatibilityCheckData.newWords());
+                System.out.println("Play is legal.");
                 System.out.println(compatibilityCheckData.output());
                 System.out.println("Score: " + score);
             } else {
+                System.out.println("Play is not legal.");
                 System.out.println(compatibilityCheckData.output());
             }
         }

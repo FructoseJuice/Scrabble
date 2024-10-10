@@ -102,7 +102,7 @@ public interface EntryPoint {
                 if (!originalBoard.getTileAtCoordinates(i, j).equals(resultBoard.getTileAtCoordinates(i, j))) {
                     //If these are both blank this is a multiplier mismatch
                     if (originalBoard.getTileAtCoordinates(i, j).isBlank() && resultBoard.getTileAtCoordinates(i, j).isBlank()) {
-                        return new BoardCompatibilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, -1);
+                        return new BoardCompatibilityCheckData(false,"Incompatible boards: multiplier mismatch at (" + i + ", " + j + ")", null, null);
                     } else {
                         //Record that a difference has been found
                         //Do not break, because we still want to look
@@ -116,7 +116,7 @@ public interface EntryPoint {
 
         //See if any spaces have been updated
         if (newPlay.isEmpty()) {
-            return new BoardCompatibilityCheckData(false, "No new play found.", null, -1);
+            return new BoardCompatibilityCheckData(false, "No new play found.", null, null);
         }
 
 
@@ -129,7 +129,7 @@ public interface EntryPoint {
         if (originalWords.size() > resultWords.size()) {
             String out = "Suspicious change in word count\n";
             out += "Original: " +  originalWords.size() + " Result: " + resultWords.size();
-            return new BoardCompatibilityCheckData(false, out, null, -1);
+            return new BoardCompatibilityCheckData(false, out, null, null);
         }
 
 
@@ -159,15 +159,15 @@ public interface EntryPoint {
                     //ScrabbleObjects.Word has been altered in illegal way
                     String out = "Incompatible boards: \"" + originalWord + "\" been altered.\n";
                     out += String.format("Found at (%d, %d).\n%n", tile.getRow(), tile.getCol());
-                    return new BoardCompatibilityCheckData(false, out, null, -1);
+                    return new BoardCompatibilityCheckData(false, out, null, null);
                 }
             }
         }
 
         //Trivial case, if this was the first move
-        if (originalWords.isEmpty()) {
-            newPlay = resultWords.getFirst();
-        }
+        //if (originalWords.isEmpty()) {
+        //    newPlay = resultWords.getFirst();
+        //}
 
         //Save play info
         StringBuilder output = new StringBuilder();
@@ -187,7 +187,8 @@ public interface EntryPoint {
             //Check if the middle space is occupied
             int halfBoardSize = Math.floorDiv(originalBoard.BOARD_SIZE, 2);
             if (resultBoard.getTileAtCoordinates(halfBoardSize, halfBoardSize).isBlank()) {
-                return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
+                output.append("First move must be in center of board.\n");
+                return new BoardCompatibilityCheckData(false, output.toString(), null, null);
             }
         }
 
@@ -195,19 +196,17 @@ public interface EntryPoint {
         for (Word word : resultWords) {
             if (!dictionary.containsWord(word.toString())) {
                 output.append("\"").append(word.toString()).append("\" Is an invalid word.");
-                output.append("\nPlay is not legal.");
-                return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
+                return new BoardCompatibilityCheckData(false, output.toString(), null, null);
             }
         }
 
 
         //Ensure all words are connected
         if (allWordsAreConnected(resultWords)) {
-            output.append("Play is legal.");
-            return new BoardCompatibilityCheckData(true, output.toString(), newWords, newPlay.toString().length());
+            return new BoardCompatibilityCheckData(true, output.toString(), newWords, newPlay.getSpacesArray());
         } else {
-            output.append("Play is not legal.");
-            return new BoardCompatibilityCheckData(false, output.toString(), null, -1);
+            output.append("Not all words are connected.\n");
+            return new BoardCompatibilityCheckData(false, output.toString(), null, null);
         }
     }
 
@@ -246,7 +245,6 @@ public interface EntryPoint {
 
             //If this word isn't connected to anything, it's invalid
             if (!hasConnection) {
-                System.out.println(allWords.get(i).toString() + " has no connection");
                 return false;
             }
         }
