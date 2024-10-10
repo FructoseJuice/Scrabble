@@ -35,6 +35,9 @@ public class GUITile extends Tile {
 
         setBackgroundColorAndContents(tile.getContents());
 
+        background.setArcHeight(5);
+        background.setArcWidth(5);
+
         root.getChildren().addAll(background, guiContents);
     }
 
