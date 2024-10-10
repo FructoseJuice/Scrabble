@@ -214,13 +214,20 @@ public class GUI extends Application implements EntryPoint {
         Pair<Word, BoardCompatibilityCheckData> move = Solver.solveBoardState(dictionary, new Pair<>(board, AITray));
 
         if (move != null) {
-            // Turn tiles into GUITiles
-            ArrayList<GUITile> tiles = new ArrayList<>();
-            //for (int i = 0; ; i++) {
+            // Turn tiles into GUITiles and remove from ai tray
+            ArrayList<GUITile> guiTiles = new ArrayList<>();
+            for (Tile ogTile : move.getSnd().newTiles()) {
+                guiTiles.add(new GUITile(ogTile));
 
-            //}
-            // Remove moved tiles
+                AITray.removeTileFromTray(ogTile);
+            }
 
+            //Add gui tiles to board
+            board.setGUITilesOnBoard(guiTiles);
+
+            //Update AI score
+            int score = EntryPoint.scorePlay(board, move.getSnd().newTiles().size(), move.getSnd().newWords());
+            aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + score));
         } else {
             //AI Couldn't find a move
         }

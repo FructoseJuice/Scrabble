@@ -21,6 +21,28 @@ public class Tray extends Word {
     }
 
 
+    public void removeTileFromTray(Tile tileToRemove) {
+        // If tile is wildcard
+        if (tileToRemove.getContents().contains("*")) {
+            for (int i = 0; i < getSpacesArray().size(); i++) {
+                if (getSpaceAtIndex(i).getContents().contains("*")) {
+                    // Remove tile and exit
+                    getSpacesArray().remove(i);
+                    return;
+                }
+            }
+        }
+
+        // Remove first found instance of this letter
+        for (int i = 0; i < getSpacesArray().size(); i++) {
+            if (getSpaceAtIndex(i).equals(tileToRemove)) {
+                // Remove tile and exit
+                getSpacesArray().remove(i);
+                return;
+            }
+        }
+    }
+
     /*
     Gut some functionality that wouldn't properly work
      */

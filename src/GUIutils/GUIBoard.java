@@ -53,6 +53,14 @@ public class GUIBoard extends Board {
         setMultiplierBoard(newMultiplierBoard);
     }
 
+    public void setGUITilesOnBoard(ArrayList<GUITile> tiles) {
+        for (GUITile tile : tiles) {
+            setTileOnBoard(tile);
+            getMultiplierAtCoordinates(tile.getRow(), tile.getCol()).setMultiplierAsUsed();
+            root.add(tile.getRoot(), tile.getCol(), tile.getRow());
+        }
+    }
+
     public GridPane getRoot() {
         return root;
     }
