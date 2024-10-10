@@ -71,7 +71,7 @@ public class GUI extends Application implements EntryPoint {
         // Initialize trays with 7 tiles each
         AITray = new Tray(new ArrayList<>(bag.subList(0, 7)));
         for (GUITile newTile : bag.subList(0, 7)) {
-            playerTray.addTile(newTile);
+            playerTray.addGUITile(newTile);
         }
 
         bag = new ArrayList<>(bag.subList(14, bag.size()));
@@ -82,7 +82,8 @@ public class GUI extends Application implements EntryPoint {
         }
 
         // Make gui board
-        GUIBoard guiBoard = new GUIBoard(15, BoardLayouts.getBoardLayout(15));
+        GUIBoard guiBoard = new GUIBoard(7, BoardLayouts.getBoardLayout(7));
+        guiBoard.getRoot().setAlignment(Pos.CENTER);
 
         // Make event listeners for board spaces
         for (int i = 0; i < guiBoard.BOARD_SIZE; i++) {
@@ -97,8 +98,8 @@ public class GUI extends Application implements EntryPoint {
 
 
         // Make submission and reset button
-        Button playerMoveSubmitButton = new Button("Submit");
-        Button playerReset = new Button("Reset");
+        Button playerMoveSubmitButton = new Button("Submit Play");
+        Button playerReset = new Button("Reset Play");
 
         playerMoveSubmitButton.setOnMouseClicked(event -> {
             if (processPlayerMove(guiBoard)) {
@@ -111,18 +112,22 @@ public class GUI extends Application implements EntryPoint {
             resetPlayerMove(guiBoard);
         });
 
+
+        // Make button trailer HBox
         HBox trailer = new HBox();
         Region buttonSpacer = new Region();
         HBox.setHgrow(buttonSpacer, Priority.ALWAYS);
         trailer.getChildren().addAll(playerReset, buttonSpacer, playerMoveSubmitButton);
 
-        //Set all children on root
-        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), trailer);
-
         //Set properties of root display
         rootDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         rootDisplay.setPadding(new Insets(5, 5, 5, 5));
         rootDisplay.setSpacing(10);
+
+        //Set all children on root
+        rootDisplay.getChildren().addAll(scoreBanner, guiBoard.getRoot(), playerTray.getRoot(), trailer);
+        rootDisplay.setAlignment(Pos.CENTER);
+        VBox.setVgrow(rootDisplay, Priority.ALWAYS);
 
         // Set scene on stage
         Scene root = new Scene(rootDisplay);
@@ -169,7 +174,7 @@ public class GUI extends Application implements EntryPoint {
             ((GUITile) board.getTileAtCoordinates(placedTile.getRow(), placedTile.getCol())).getRoot().getChildren().remove(placedTile.getRoot());
             placedTile.setRow(-1);
             placedTile.setCol(-1);
-            playerTray.addTile(placedTile);
+            playerTray.addGUITile(placedTile);
             setEventListenerOnPlayerTile(placedTile);
         }
 
@@ -198,6 +203,16 @@ public class GUI extends Application implements EntryPoint {
                 //Set tiles on board
                 board.setTileOnBoard(placedTile);
                 board.getMultiplierAtCoordinates(placedTile.getRow(), placedTile.getCol()).setMultiplierAsUsed();
+
+                //Remove from tray
+                playerTray.removeTileFromTray(placedTile);
+            }
+
+            // Replenish player tray
+            while (playerTray.size() < 7) {
+                GUITile newTile = bag.removeFirst();
+                setEventListenerOnPlayerTile(newTile);
+                playerTray.addGUITile(newTile);
             }
 
             placedTiles = new ArrayList<>();
@@ -222,6 +237,12 @@ public class GUI extends Application implements EntryPoint {
                 AITray.removeTileFromTray(ogTile);
             }
 
+            //Replenish ai tray
+            // Replenish player tray
+            while (AITray.size() < 7) {
+                AITray.addSpace(bag.removeFirst());
+            }
+
             //Add gui tiles to board
             board.setGUITilesOnBoard(guiTiles);
 
@@ -230,6 +251,7 @@ public class GUI extends Application implements EntryPoint {
             aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + score));
         } else {
             //AI Couldn't find a move
+            System.out.println();
         }
 
         System.out.println();

@@ -3,7 +3,6 @@ package GUIutils;
 import ScrabbleObjects.Tile;
 import ScrabbleObjects.Tray;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class GUITray extends Tray {
         }
     }
 
-    public void addTile(GUITile tile) {
+    public void addGUITile(GUITile tile) {
         addSpace(tile);
         guiTray.getChildren().add(tile.getRoot());
     }
