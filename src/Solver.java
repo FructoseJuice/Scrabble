@@ -548,30 +548,29 @@ public class Solver implements EntryPoint {
         }
 
         // Find the highest scoring move
-        //Pair<Word, BoardCompatibilityCheckData> highestScoringMove = null;
-        PlayData highestScoringMove = null;
+        Pair<Word, BoardCompatibilityCheckData> highestScoringMove = null;
         int highestScore = 0;
         int score;
         for (Pair<Word, BoardCompatibilityCheckData> move : legalMoves) {
             score = EntryPoint.scorePlay(originalBoard, move.getSnd().newTiles().size(), move.getSnd().newWords());
 
             if (highestScore < score) {
-                highestScoringMove = new PlayData(move.getSnd().output(), move.getFst(), score);
+                highestScoringMove = move;
                 highestScore = score;
             }
         }
 
         // Refine the output a bit
         if (highestScoringMove != null) {
-            String output = highestScoringMove.output();
+            String newPlayOutput = highestScoringMove.getSnd().output();
+            String output = highestScoringMove.getSnd().output();
             output = output.split("\n")[0] + "\n";
-            output += "Word is: " + highestScoringMove.newWord().toString() + "\n";
+            output += "Word is: " + highestScoringMove.getFst() + "\n";
             output += "Score is: " + highestScore + "\n";
 
-            return new PlayData(output, highestScoringMove.newWord(), highestScoringMove.score());
+            return new PlayData(newPlayOutput, output, new Word(highestScoringMove.getSnd().newTiles()), highestScoringMove.getSnd().newWords(), highestScore);
         }
 
-
-        return highestScoringMove;
+        return null;
     }
 }

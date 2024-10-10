@@ -142,6 +142,8 @@ public class GUI extends Application implements EntryPoint {
                 setEventListenerOnPlayerTile(newTile);
             }
 
+            updateGameInfoDisplay("Player has swapped out tiles.");
+
             // End player turn
             switchPlayerToMove(PlayerType.HUMAN);
         });
@@ -279,7 +281,19 @@ public class GUI extends Application implements EntryPoint {
     }
 
     private void updateGameInfoDisplay(String output) {
-        gameInfoDisplay.appendText(output);
+        String old = gameInfoDisplay.getText();
+        gameInfoDisplay.setText(output + "\n\n");
+        gameInfoDisplay.appendText(old);
+    }
+
+    private String newWordsToString(ArrayList<Word> newWords) {
+        StringBuilder out = new StringBuilder();
+
+        for (Word word : newWords) {
+            out.append(word).append(", ");
+        }
+
+        return out.substring(0, out.length() - 2);
     }
 
     private void resetPlayerMove() {
@@ -313,8 +327,10 @@ public class GUI extends Application implements EntryPoint {
             int score = EntryPoint.scorePlay(board, data.newTiles().size(), data.newWords());
             playerScore.setText(String.valueOf(Integer.parseInt(playerScore.getText()) + score));
 
+
+
             //Update game info
-            updateGameInfoDisplay("Player made move: \n" + data.output() + "Score: " + score + "\n");
+            updateGameInfoDisplay("Player made move: \n" + data.output() + "New Word(s) are: " + newWordsToString(data.newWords()) + "\nScore: " + score + "\n");
 
             // Unflip player tiles
             for (Tile tile : playerTray.getSpacesArray()) {
@@ -358,32 +374,32 @@ public class GUI extends Application implements EntryPoint {
             AITray.addSpace(newTiles.removeFirst());
         }
 
+        updateGameInfoDisplay("AI has swapped out tiles in tray.");
+
         switchPlayerToMove(PlayerType.AI);
     }
 
     private void makeAIMove(PlayData move) {
         // Turn tiles into GUITiles and remove from ai tray
         ArrayList<GUITile> guiTiles = new ArrayList<>();
-        for (Tile ogTile : move.newWord().getSpacesArray()) {
+        for (Tile ogTile : move.newPlay().getSpacesArray()) {
             guiTiles.add(new GUITile(ogTile));
 
             AITray.removeTileFromTray(ogTile);
         }
 
         //Replenish ai tray
-        // Replenish player tray
         while (AITray.size() < 7 && !bag.isEmpty()) {
             AITray.addSpace(bag.removeFirst());
         }
 
         //Update AI score
-        //int score = EntryPoint.scorePlay(board, move.newWord().size(), move.getSnd().newWords());
         aiScore.setText(String.valueOf(Integer.parseInt(aiScore.getText()) + move.score()));
 
         //Add gui tiles to board
         board.setGUITilesOnBoard(guiTiles);
 
-        updateGameInfoDisplay("AI has made move: " + move.output() + "Score is: " + move.score() + "\n");
+        updateGameInfoDisplay("AI has made move: \n" + move.newPlayString() + "New Word(s) are: " + newWordsToString(move.newWords()) + "\nScore is: " + move.score());
 
         switchPlayerToMove(PlayerType.AI);
     }

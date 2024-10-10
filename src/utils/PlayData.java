@@ -2,5 +2,7 @@ package utils;
 
 import ScrabbleObjects.Word;
 
-public record PlayData(String output, Word newWord, int score) {
+import java.util.ArrayList;
+
+public record PlayData(String newPlayString, String output, Word newPlay, ArrayList<Word> newWords, int score) {
 }
