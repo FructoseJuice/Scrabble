@@ -532,7 +532,7 @@ public class Solver implements EntryPoint {
 
         // Find legal moves
         for (Word possibleWord : possibleWords) {
-
+            // Save Tiles that were at these spaces
             oldContents = resultBoard.temporarilyAddWord(possibleWord);
 
             // Check if legal
@@ -564,7 +564,7 @@ public class Solver implements EntryPoint {
         if (highestScoringMove != null) {
             String output = highestScoringMove.getSnd().output();
             output = output.split("\n")[0] + "\n";
-            output += "ScrabbleObjects.Word is: " + highestScoringMove.getFst().toString() + "\n";
+            output += "Word is: " + highestScoringMove.getFst().toString() + "\n";
             output += "Score is: " + highestScore + "\n";
             BoardCompatibilityCheckData newData =
                     new BoardCompatibilityCheckData(true, output, highestScoringMove.getSnd().newWords(), highestScoringMove.getSnd().newTiles());

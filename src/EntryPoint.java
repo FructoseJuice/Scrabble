@@ -291,11 +291,19 @@ public interface EntryPoint {
         for (Tile tile : word.getSpacesArray()) {
             multiplier = board.getMultiplierAtCoordinates(tile.getRow(), tile.getCol());
 
-            if (!multiplier.hasMultiplierBeenUsed() && multiplier.type == Multiplier.MultiplierType.WORD) {
-                wordMultipliers.add(multiplier);
-            }
+            // Apply multipliers
+            if (!multiplier.hasMultiplierBeenUsed() && multiplier.type == Multiplier.MultiplierType.LETTER) {
+                // Apply letter multiplier
+                score += tile.getLetterPointValue() * multiplier.getMultiplierIntValue();
+            } else {
+                if (!multiplier.hasMultiplierBeenUsed() && multiplier.type == Multiplier.MultiplierType.WORD) {
+                    // Add to word multiplier list
+                    wordMultipliers.add(multiplier);
+                }
 
-            score += tile.getLetterPointValue();
+                // Add just the tile letter point
+                score += tile.getLetterPointValue();
+            }
         }
 
         //Apply word multipliers

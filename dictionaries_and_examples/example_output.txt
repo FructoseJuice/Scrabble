@@ -1,4 +1,4 @@
-Input utils.Board:
+Input Board:
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
@@ -14,9 +14,9 @@ Input utils.Board:
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
-ScrabbleObjects.Tray: le*mdoe
+Tray: le*mdoe
 Solution lemoNed has 81 points
-Solution utils.Board:
+Solution Board:
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 .. .. 2. .. .. .. .2 ..  l  e  m  o  N  e  d
@@ -33,7 +33,7 @@ Solution utils.Board:
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
 
-Input utils.Board:
+Input Board:
 3. .. .. 2. .. .. 3.
 .. .3 .. .. .. .3 ..
 .. ..  a  d .2 .. ..
@@ -41,9 +41,9 @@ Input utils.Board:
 .. ..  l  o .2 .. ..
 ..  m  a  t .. .3 ..
  r  e  S  i  d .. 3.
-ScrabbleObjects.Tray: toloeri
+Tray: toloeri
 Solution troolie has 67 points
-Solution utils.Board:
+Solution Board:
 3. .. .. 2. ..  t 3.
 .. .3 .. .. ..  r ..
 .. ..  a  d .2  o ..
@@ -52,7 +52,7 @@ Solution utils.Board:
 ..  m  a  t ..  i ..
  r  e  S  i  d  e 3.
 
-Input utils.Board:
+Input Board:
 4. .. .. .2 .. .. .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
 .. 2. .. .. .3 .. .. .. 2. .. .. .. 2. .. .. .. .3 .. .. 2. ..
 .. .. 2. .. .. .4 .. .. .. 2. .. 2. .. .. .. .4 .. .. 2. .. ..
@@ -74,9 +74,9 @@ Input utils.Board:
 .. ..  a  r  o  w .. .. .. 2. .. 2. .. .. .. .4 .. .. 2. .. ..
 .. 2. ..  o  x  y .. .. 2. .. .. .. 2. .. .. .. .3 .. .. 2. ..
  k  e  p  s ..  n .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
-ScrabbleObjects.Tray: ntnbtoi
+Tray: ntnbtoi
 Solution tinpot has 24 points
-Solution utils.Board:
+Solution Board:
 4. .. .. .2 .. .. .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
 .. 2. .. .. .3 .. .. .. 2. .. .. .. 2. .. .. .. .3 .. .. 2. ..
 .. .. 2. .. .. .4 .. .. .. 2. .. 2. .. .. .. .4 .. .. 2. .. ..
@@ -99,7 +99,7 @@ Solution utils.Board:
 .. 2. ..  o  x  y .. .. 2. .. .. .. 2. .. .. .. .3 .. .. 2. ..
  k  e  p  s ..  n .. 3. .. .. .2 .. .. 3. .. .. .. .2 .. .. 4.
 
-Input utils.Board:
+Input Board:
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
@@ -115,9 +115,9 @@ Input utils.Board:
 .. .. 2. .. .. .. .2 .. .2 .. .. .. 2. .. ..
 .. 2. .. .. .. .3 .. .. .. .3 .. .. .. 2. ..
 3. .. .. .2 .. .. .. 3. .. .. .. .2 .. .. 3.
-ScrabbleObjects.Tray: dgos*ie
+Tray: dgos*ie
 Solution Bodgiest has 83 points
-Solution utils.Board:
+Solution Board:
 3. .. .. .2 .. .. ..  B .. .. .. .2 .. .. 3.
 .. 2. .. .. .. .3 ..  o .. .3 .. .. .. 2. ..
 .. .. 2. .. .. .. .2  d .2 .. .. .. 2. .. ..
