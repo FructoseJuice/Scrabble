@@ -8,9 +8,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -232,6 +230,13 @@ public class GUI extends Application implements EntryPoint {
             selectedTile.setRow(space.getRow());
             //Toggle selection indicator
             selectedTile.toggleUserSelectionIndicator();
+
+            //Check if this is a blank tile
+            if (selectedTile.getContents().contains("*")) {
+                //We need the player to select what letter to use for this blank
+                selectedTile.setGuiContents(showBlankTileDialogue());
+            }
+
             //Add to placed tiles
             placedTiles.add(selectedTile);
             //Remove event handler
@@ -300,6 +305,12 @@ public class GUI extends Application implements EntryPoint {
             ((GUITile) board.getTileAtCoordinates(placedTile.getRow(), placedTile.getCol())).getRoot().getChildren().remove(placedTile.getRoot());
             placedTile.setRow(-1);
             placedTile.setCol(-1);
+
+            //Check if blank tile
+            if (placedTile.getContents().toUpperCase().charAt(0) == placedTile.getContents().charAt(0)) {
+                placedTile.setGuiContents("*");
+            }
+
             playerTray.addGUITile(placedTile);
             setEventListenerOnPlayerTile(placedTile);
         }
@@ -384,7 +395,11 @@ public class GUI extends Application implements EntryPoint {
         for (Tile ogTile : move.newPlay().getSpacesArray()) {
             guiTiles.add(new GUITile(ogTile));
 
-            AITray.removeTileFromTray(ogTile);
+            if (ogTile.getContents().toUpperCase().equals(ogTile.getContents())) {
+                AITray.removeTileFromTray(new GUITile("*", -1, -1));
+            } else {
+                AITray.removeTileFromTray(ogTile);
+            }
         }
 
         //Replenish ai tray
@@ -403,6 +418,32 @@ public class GUI extends Application implements EntryPoint {
         switchPlayerToMove(PlayerType.AI);
     }
 
+    public String showBlankTileDialogue() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Select Letter For Blank Tile");
+
+        VBox dialogPane = new VBox();
+        dialogPane.getChildren().add(new Label("Select Letter"));
+
+        MenuBar menuBar = new MenuBar();
+        Menu hamburgerMenu = new Menu("▼");
+
+        for (int i = 0; i < 26; i++) {
+            MenuItem newItem = new Menu(String.valueOf((char) (i + 'a')).toUpperCase());
+            int finalI = i;
+            newItem.setOnAction(e -> dialog.setResult(String.valueOf((char) (finalI + 'a')).toUpperCase()));
+
+            hamburgerMenu.getItems().add(newItem);
+        }
+
+        menuBar.getMenus().add(hamburgerMenu);
+        dialogPane.getChildren().add(menuBar);
+        dialog.getDialogPane().setContent(dialogPane);
+
+        dialog.showAndWait();
+
+        return dialog.getResult();
+    }
 
     private void fillBag() {
         String freq =

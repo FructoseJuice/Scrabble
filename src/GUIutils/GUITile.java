@@ -63,6 +63,14 @@ public class GUITile extends Tile {
         flipped = !flipped;
     }
 
+    public void setGuiContents(String contents) {
+        setContents(contents);
+
+        if (!flipped) {
+            guiContents.setText(contents);
+        }
+    }
+
     public StackPane getRoot() {
         return root;
     }
