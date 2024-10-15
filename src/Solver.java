@@ -256,6 +256,23 @@ public class Solver implements EntryPoint {
             }
         }
 
+        //If anchor spaces are empty, check if this board is empty to determine if it's the first move
+        boolean boardEmpty = true;
+        for (int row = 0; row < board.BOARD_SIZE; row++) {
+            for (int col = 0; col < board.BOARD_SIZE; col++) {
+                if (board.getTileAtCoordinates(row, col).containsLetter()) {
+                    boardEmpty = false;
+                    break;
+                }
+            }
+        }
+
+        //If first move, put anchor in center of board
+        if (boardEmpty) {
+            int center = Math.floorDiv(board.BOARD_SIZE, 2);
+            anchorSpaces.add(new Pair<>(new Pair<>(board.getTileAtCoordinates(center, center), new Word()), Side.LEFT));
+        }
+
         return anchorSpaces;
     }
 

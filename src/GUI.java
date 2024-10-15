@@ -25,6 +25,9 @@ public class GUI extends Application implements EntryPoint {
     private static Trie dictionary;
     private static GUIBoard board;
 
+    private static int BOARD_DIMENSIONS = 7;
+    private static boolean GAMEOVER = false;
+
     private ArrayList<GUITile> bag = new ArrayList<>(100);
 
     private static GUITile selectedTile = null;
@@ -40,6 +43,12 @@ public class GUI extends Application implements EntryPoint {
 
     public static void main(String[] args) {
         dictionary = EntryPoint.parseClIForTrie(args);
+
+        if (args.length == 2) {
+            BOARD_DIMENSIONS = Integer.parseInt(args[1]);
+        } else {
+            BOARD_DIMENSIONS = 15;
+        }
 
         launch(args);
     }
@@ -83,7 +92,7 @@ public class GUI extends Application implements EntryPoint {
         }
 
         // Make gui board
-        board = new GUIBoard(15, BoardLayouts.getBoardLayout(15));
+        board = new GUIBoard(BOARD_DIMENSIONS, BoardLayouts.getBoardLayout(BOARD_DIMENSIONS));
         board.getRoot().setAlignment(Pos.CENTER);
 
         // Make event listeners for board spaces
@@ -101,15 +110,20 @@ public class GUI extends Application implements EntryPoint {
         // Make submission, reset, and swap buttons
         Button playerMoveSubmitButton = new Button("Submit Play");
         Button swapTilesButton = new Button("Swap Tiles");
+        Button skipButton = new Button("Skip");
         Button playerReset = new Button("Reset Play");
 
         playerMoveSubmitButton.setOnMouseClicked(event -> {
+            if (GAMEOVER) return;
+
             if (processPlayerMove(board)) {
                 switchPlayerToMove(PlayerType.HUMAN);
             }
         });
 
         swapTilesButton.setOnMouseClicked(event -> {
+            if (GAMEOVER) return;
+
             // Reset player move
             resetPlayerMove();
 
@@ -146,8 +160,17 @@ public class GUI extends Application implements EntryPoint {
             switchPlayerToMove(PlayerType.HUMAN);
         });
 
+        skipButton.setOnMouseClicked(event -> {
+            if (GAMEOVER) return;
+
+            resetPlayerMove();
+
+            switchPlayerToMove(PlayerType.HUMAN);
+        });
 
         playerReset.setOnMouseClicked(event -> {
+            if (GAMEOVER) return;
+
             resetPlayerMove();
         });
 
@@ -157,11 +180,13 @@ public class GUI extends Application implements EntryPoint {
         //Spacers to prettify display
         Region buttonSpacer1 = new Region();
         Region buttonSpacer2 = new Region();
+        Region buttonSpacer3 = new Region();
         HBox.setHgrow(buttonSpacer1, Priority.ALWAYS);
         HBox.setHgrow(buttonSpacer2, Priority.ALWAYS);
+        HBox.setHgrow(buttonSpacer3, Priority.ALWAYS);
         //Set properties and add children
         trailer.setSpacing(5);
-        trailer.getChildren().addAll(playerReset, buttonSpacer1, swapTilesButton, buttonSpacer2, playerMoveSubmitButton);
+        trailer.getChildren().addAll(skipButton, buttonSpacer3, playerReset, buttonSpacer1, swapTilesButton, buttonSpacer2, playerMoveSubmitButton);
 
         //Set properties of game info display
         gameInfoDisplay.setEditable(false);
@@ -186,6 +211,11 @@ public class GUI extends Application implements EntryPoint {
         primaryStage.show();
     }
 
+    /**
+     * Sets an event listener on a players tile. If the player clicks on this tile in
+     * the tray, we should toggle the selection indicator for this tile and the previously
+     * selected tile (if it exists), and update the selectedTile variable with this tile
+     */
     private void setEventListenerOnPlayerTile(GUITile tile) {
         tile.getRoot().setOnMouseClicked(event -> {
             // Check if left click
@@ -215,6 +245,10 @@ public class GUI extends Application implements EntryPoint {
         });
     }
 
+    /**
+     * Sets an event listener on a board space. If the player clicks this
+     * board space and a tile is selected, we want to place the selected tile on the space.
+     */
     private void setEventListenerOnBoardSpace(GUITile space) {
         // Check if selected space is already filled
         if (space.getRoot().getChildren().size() > 2) return;
@@ -246,6 +280,10 @@ public class GUI extends Application implements EntryPoint {
         }
     }
 
+    /**
+     * Checks for game over conditions and switches the game to the ai or human.
+     * @param lastMoved Player that last moved
+     */
     private void switchPlayerToMove(PlayerType lastMoved) {
         // Check for the move possibilities
         PlayData playerMove = Solver.solveBoardState(dictionary, new Pair<>(board, playerTray));
@@ -253,23 +291,27 @@ public class GUI extends Application implements EntryPoint {
 
         // Check if neither player has a move
         if (playerMove == null && aiMove == null) {
-            //Game over
+            gameOver();
+            return;
         }
 
         // Check for game over state
         if (bag.isEmpty()) {
             if (playerTray.isEmpty() || AITray.isEmpty()) {
-                //Game over
+                gameOver();
+                return;
             }
 
             // Check if the player to play can move
             if (lastMoved == PlayerType.HUMAN) {
                 if (aiMove == null) {
-                    //game over
+                    gameOver();
+                    return;
                 }
             } else {
                 if (playerMove == null) {
-                    //game over
+                    gameOver();
+                    return;
                 }
             }
         }
@@ -280,16 +322,71 @@ public class GUI extends Application implements EntryPoint {
             } else {
                 makeAITraySwap();
             }
-        } else {
-            //idk
         }
     }
 
+    /**
+     * Determines who won the game and update game info display.
+     * Also removes all event handlers from tiles
+     */
+    public void gameOver() {
+        GAMEOVER = true;
+
+        int aiFinalScore = Integer.parseInt(aiScore.getText());
+        int playerFinalScore = Integer.parseInt(playerScore.getText());
+
+        //Adjust scores by unplayed tiles
+        for (Tile tile : playerTray.getSpacesArray()) {
+            playerFinalScore -= tile.getLetterPointValue();
+
+            if (AITray.isEmpty()) {
+                aiFinalScore += tile.getLetterPointValue();
+            }
+        }
+
+        for (Tile tile : AITray.getSpacesArray()) {
+            aiFinalScore -= tile.getLetterPointValue();
+
+            if (playerTray.isEmpty()) {
+                playerFinalScore += tile.getLetterPointValue();
+            }
+        }
+
+        String winner = "";
+        if (aiFinalScore == playerFinalScore) {
+            if (Integer.parseInt(aiScore.getText()) > Integer.parseInt(playerScore.getText())) {
+                winner = "AI";
+            } else {
+                winner = "Player";
+            }
+        } else {
+            winner = (aiFinalScore > playerFinalScore) ? "AI" : "Player";
+        }
+
+        //Turn off event handlers
+        for (Tile tile : playerTray.getSpacesArray()) {
+            ((GUITile) tile).getRoot().setOnMouseClicked(null);
+            selectedTile = null;
+        }
+
+        updateGameInfoDisplay("Game over!\n" + winner + " has won the game.");
+    }
+
+    /**
+     * Updates the info display with new text in the bottom of the GUI.
+     * @param output New text to append
+     */
     private void updateGameInfoDisplay(String output) {
         gameInfoDisplay.appendText("\n" + output);
         gameInfoDisplay.setScrollTop(Double.MAX_VALUE);
     }
 
+    /**
+     * Takes a list of words and puts them into one nice string.
+     * [s1, s2,...,sn] = "s1, s2, ..., sn"
+     * @param newWords New words to put in string
+     * @return String of new words joined by a comma
+     */
     private String newWordsToString(ArrayList<Word> newWords) {
         StringBuilder out = new StringBuilder();
 
@@ -300,6 +397,9 @@ public class GUI extends Application implements EntryPoint {
         return out.substring(0, out.length() - 2);
     }
 
+    /**
+     * Resets the players turn. Any tiles on the board are returned back to the tray
+     */
     private void resetPlayerMove() {
         for (GUITile placedTile : placedTiles) {
             ((GUITile) board.getTileAtCoordinates(placedTile.getRow(), placedTile.getCol())).getRoot().getChildren().remove(placedTile.getRoot());
@@ -319,6 +419,12 @@ public class GUI extends Application implements EntryPoint {
     }
 
 
+    /**
+     * Check if the players move is valid or not. If the paly is valid, it should be scored
+     * and the turn should be switched to the AI.
+     * @param board Board to check
+     * @return If this move is valid
+     */
     private boolean processPlayerMove(GUIBoard board) {
         //Make result board
         Board resultBoard = board.copyOf();
@@ -371,6 +477,9 @@ public class GUI extends Application implements EntryPoint {
         return false;
     }
 
+    /**
+     * Fully swaps out the AI tray
+     */
     private void makeAITraySwap() {
         ArrayList<GUITile> newTiles = new ArrayList<>();
 
@@ -389,6 +498,11 @@ public class GUI extends Application implements EntryPoint {
         switchPlayerToMove(PlayerType.AI);
     }
 
+    /**
+     * Makes an already computed move on the board. All this function has to do is
+     * put the tiles on the GUI, and update relevant information displays.
+     * @param move Move to make
+     */
     private void makeAIMove(PlayData move) {
         // Turn tiles into GUITiles and remove from ai tray
         ArrayList<GUITile> guiTiles = new ArrayList<>();
