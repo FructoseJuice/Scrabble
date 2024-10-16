@@ -1,13 +1,5 @@
 # Scrabble
 
-### Object design diagram
-
-The object design document should be in PDF format.
-First page/slide is object diagram, with description of objects on the next page(s).
-
-On more complicated projects, you may need additional diagrams to
-clearly describe subcomponents.
-
 ## Score Checker
 This program takes in one command line argument to run. The jar contains all of the dictionaries
 that were provided for this project so you simply only need to provide the name of the 
